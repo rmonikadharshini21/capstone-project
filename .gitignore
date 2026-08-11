@@ -29,3 +29,6 @@ Thumbs.db
 .mypy_cache/
 # Uploaded files
 uploads/
+# Node.js
+node_modules/
+frontend/node_modules/
