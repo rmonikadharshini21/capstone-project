@@ -8,7 +8,6 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setMessage("Logging in...");
 
     try {
@@ -16,20 +15,40 @@ function Login() {
 
       console.log("Login response:", data);
 
-      setMessage("Login successful!");
+      // Save the currently logged-in user's email
+      localStorage.setItem(
+        "loggedInUserEmail",
+        email.trim().toLowerCase()
+      );
+
+      // Save complete user information if returned by backend
+      localStorage.setItem("loggedInUser", JSON.stringify(data));
+
+      if (data.role === "PUBLIC") {
+        window.location.href = "/dashboard";
+      } else if (data.role === "ADMIN") {
+        window.location.href = "/admin";
+      } else if (data.role === "WORKER") {
+        window.location.href = "/worker";
+      } else {
+        setMessage("Login successful!");
+      }
     } catch (error) {
       console.error("Login error:", error);
-      setMessage(error.message);
+      setMessage(error.message || "Login failed");
     }
   };
 
   return (
     <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
+
       <div
         className="card shadow p-4"
         style={{ width: "100%", maxWidth: "420px" }}
       >
+
         <div className="text-center mb-4">
+
           <h2 className="fw-bold text-success">
             Smart Waste Management
           </h2>
@@ -37,6 +56,7 @@ function Login() {
           <p className="text-muted">
             Login to your account
           </p>
+
         </div>
 
         {message && (
@@ -46,7 +66,9 @@ function Login() {
         )}
 
         <form onSubmit={handleSubmit}>
+
           <div className="mb-3">
+
             <label className="form-label fw-semibold">
               Email Address
             </label>
@@ -59,9 +81,11 @@ function Login() {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
+
           </div>
 
           <div className="mb-3">
+
             <label className="form-label fw-semibold">
               Password
             </label>
@@ -74,6 +98,7 @@ function Login() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+
           </div>
 
           <button
@@ -82,17 +107,26 @@ function Login() {
           >
             Login
           </button>
+
         </form>
 
         <div className="text-center mt-4">
+
           <p className="mb-0">
             Don't have an account?{" "}
-            <span className="text-success fw-semibold">
+
+            <a
+              href="/register"
+              className="text-success fw-semibold text-decoration-none"
+            >
               Register
-            </span>
+            </a>
           </p>
+
         </div>
+
       </div>
+
     </div>
   );
 }
