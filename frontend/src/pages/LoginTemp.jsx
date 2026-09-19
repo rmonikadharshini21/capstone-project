@@ -1,63 +1,60 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Login({ setAuth }) {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
 
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     try {
       const response = await fetch(
-        'http://127.0.0.1:8000/auth/login',
+        "http://127.0.0.1:8000/auth/login",
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json",
           },
-          body: JSON.stringify(formData)
+          body: JSON.stringify(formData),
         }
       );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.detail || 'Login failed');
+        throw new Error(data.detail || "Login failed");
       }
 
-      localStorage.setItem(
-        'token',
-        data.access_token
-      );
-
-      localStorage.setItem(
-        'user',
-        JSON.stringify(data.user)
-      );
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
       setAuth(true);
 
-      if (data.user.role === 'ADMIN') {
-        navigate('/admin');
-      } else {
-        navigate('/dashboard');
-      }
+      const role = data.user.role.toUpperCase();
 
+      if (role === "ADMIN") {
+        navigate("/admin");
+      } else if (role === "WORKER") {
+        navigate("/worker");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (err) {
       setError(err.message);
     }
@@ -68,7 +65,6 @@ export default function Login({ setAuth }) {
       <div className="row justify-content-center">
         <div className="col-md-5">
           <div className="card p-4 shadow-sm">
-
             <h2 className="text-center text-primary mb-3">
               Login
             </h2>
@@ -80,12 +76,8 @@ export default function Login({ setAuth }) {
             )}
 
             <form onSubmit={handleSubmit}>
-
               <div className="mb-3">
-                <label className="form-label">
-                  Email
-                </label>
-
+                <label className="form-label">Email</label>
                 <input
                   type="email"
                   name="email"
@@ -97,10 +89,7 @@ export default function Login({ setAuth }) {
               </div>
 
               <div className="mb-3">
-                <label className="form-label">
-                  Password
-                </label>
-
+                <label className="form-label">Password</label>
                 <input
                   type="password"
                   name="password"
@@ -117,18 +106,14 @@ export default function Login({ setAuth }) {
               >
                 Login
               </button>
-
             </form>
 
             <div className="text-center mt-3">
               <small className="text-muted">
-                Don't have an account?{' '}
-                <Link to="/register">
-                  Register
-                </Link>
+                Don't have an account?{" "}
+                <Link to="/register">Register</Link>
               </small>
             </div>
-
           </div>
         </div>
       </div>

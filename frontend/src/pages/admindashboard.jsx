@@ -1,149 +1,284 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
+import React, { useEffect, useState } from "react";
+import API from "../services/api";
 
 export default function AdminDashboard() {
-  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const [reports, setReports] = useState([]);
-  const [error, setError] = useState('');
+  const [workers, setWorkers] = useState([]);
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const userStr = localStorage.getItem('user');
-  const user = userStr ? JSON.parse(userStr) : null;
-  const token = localStorage.getItem('token');
+  const fetchData = async () => {
+    try {
+      const [reportsResponse, workersResponse] = await Promise.all([
+        API.get("/admin/reports"),
+        API.get("/admin/workers"),
+      ]);
 
-  useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        const response = await fetch(
-          'http://127.0.0.1:8000/admin/reports',
-          {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.detail || 'Failed to fetch reports');
-        }
-
-        setReports(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (token) {
-      fetchReports();
-    } else {
-      navigate('/login');
+      setReports(reportsResponse.data);
+      setWorkers(workersResponse.data);
+    } catch (error) {
+      setMessage(
+        error.response?.data?.detail ||
+          "Failed to load admin data"
+      );
+    } finally {
+      setLoading(false);
     }
-  }, [token, navigate]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/login', { replace: true });
   };
 
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const assignWorker = async (reportId, workerId) => {
+    if (!workerId) return;
+
+    try {
+      await API.put("/admin/assign", {
+        report_id: reportId,
+        worker_id: Number(workerId),
+      });
+
+      setMessage("Worker assigned successfully!");
+      fetchData();
+    } catch (error) {
+      setMessage(
+        error.response?.data?.detail ||
+          "Failed to assign worker"
+      );
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+  };
+
+  const pendingReports = reports.filter(
+    (report) => report.status === "PENDING"
+  ).length;
+
+  const assignedReports = reports.filter(
+    (report) => report.status === "ASSIGNED"
+  ).length;
+
+  const completedReports = reports.filter(
+    (report) => report.status === "COMPLETED"
+  ).length;
+
   return (
-    <div className="container py-4">
-
-      <header className="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+    <div
+      style={{
+        padding: "20px",
+        maxWidth: "1200px",
+        margin: "0 auto",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <div>
-          <h2 className="fw-bold text-primary mb-0">
-            Admin Dashboard
-          </h2>
-
-          {user && (
-            <small className="text-muted">
-              Logged in as: <strong>{user.full_name}</strong> ({user.role})
-            </small>
-          )}
+          <h1>Admin Dashboard</h1>
+          <p>
+            Welcome, <strong>{user.full_name || "Admin"}</strong>
+          </p>
         </div>
 
         <button
-          className="btn btn-outline-danger px-4"
-          onClick={handleLogout}
+          onClick={logout}
+          style={{
+            backgroundColor: "#dc3545",
+            color: "white",
+            border: "none",
+            padding: "12px 24px",
+            borderRadius: "8px",
+            cursor: "pointer",
+          }}
         >
           Logout
         </button>
-      </header>
-
-      <div className="card shadow-sm border-0 p-4">
-
-        <h4 className="fw-bold text-secondary mb-3">
-          Waste Complaint Management
-        </h4>
-
-        {loading && <p>Loading reports...</p>}
-
-        {error && (
-          <div className="alert alert-danger">
-            {error}
-          </div>
-        )}
-
-        {!loading && !error && (
-          <div className="table-responsive mt-3">
-            <table className="table table-hover border align-middle">
-
-              <thead className="table-light">
-                <tr>
-                  <th>ID</th>
-                  <th>Waste Type</th>
-                  <th>Location</th>
-                  <th>Description</th>
-                  <th>Priority</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {reports.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" className="text-center">
-                      No waste reports found.
-                    </td>
-                  </tr>
-                ) : (
-                  reports.map((report) => (
-                    <tr key={report.report_id}>
-                      <td>#{report.report_id}</td>
-
-                      <td>{report.waste_type}</td>
-
-                      <td>{report.location}</td>
-
-                      <td>{report.description}</td>
-
-                      <td>
-                        <span className="badge bg-warning text-dark">
-                          {report.priority_level || 'MEDIUM'}
-                        </span>
-                      </td>
-
-                      <td>
-                        <span className="badge bg-info text-dark">
-                          {report.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-
-            </table>
-          </div>
-        )}
-
       </div>
+
+      <hr />
+
+      <h2>Waste Management Services</h2>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: "20px",
+          marginTop: "20px",
+        }}
+      >
+        <div className="dashboard-card">
+          <div className="dashboard-icon">📋</div>
+          <h2>All Reports</h2>
+          <p>View all waste complaints</p>
+          <h3>{reports.length}</h3>
+        </div>
+
+        <div className="dashboard-card">
+          <div className="dashboard-icon">⏳</div>
+          <h2>Pending Reports</h2>
+          <p>Reports waiting for assignment</p>
+          <h3>{pendingReports}</h3>
+        </div>
+
+        <div className="dashboard-card">
+          <div className="dashboard-icon">🚛</div>
+          <h2>Assigned Reports</h2>
+          <p>Reports assigned to workers</p>
+          <h3>{assignedReports}</h3>
+        </div>
+
+        <div className="dashboard-card">
+          <div className="dashboard-icon">✅</div>
+          <h2>Completed Reports</h2>
+          <p>Completed waste collection</p>
+          <h3>{completedReports}</h3>
+        </div>
+      </div>
+
+      {message && (
+        <p
+          style={{
+            color: message.includes("successfully")
+              ? "green"
+              : "red",
+            marginTop: "20px",
+          }}
+        >
+          {message}
+        </p>
+      )}
+
+      <h2 style={{ marginTop: "40px" }}>
+        Waste Complaint Management
+      </h2>
+
+      {loading ? (
+        <p>Loading reports...</p>
+      ) : reports.length === 0 ? (
+        <p>No reports available.</p>
+      ) : (
+        <div style={{ overflowX: "auto" }}>
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              marginTop: "20px",
+            }}
+          >
+            <thead>
+              <tr style={{ backgroundColor: "#f2f2f2" }}>
+                <th style={{ padding: "12px" }}>ID</th>
+                <th style={{ padding: "12px" }}>Waste Type</th>
+                <th style={{ padding: "12px" }}>Location</th>
+                <th style={{ padding: "12px" }}>Description</th>
+                <th style={{ padding: "12px" }}>Priority</th>
+                <th style={{ padding: "12px" }}>Status</th>
+                <th style={{ padding: "12px" }}>Assign Worker</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {reports.map((report) => (
+                <tr key={report.report_id}>
+                  <td style={{ padding: "12px" }}>
+                    {report.report_id}
+                  </td>
+
+                  <td style={{ padding: "12px" }}>
+                    {report.waste_type}
+                  </td>
+
+                  <td style={{ padding: "12px" }}>
+                    {report.location}
+                  </td>
+
+                  <td style={{ padding: "12px" }}>
+                    {report.description}
+                  </td>
+
+                  <td style={{ padding: "12px" }}>
+                    {report.priority_level || "MEDIUM"}
+                  </td>
+
+                  <td style={{ padding: "12px" }}>
+                    {report.status}
+                  </td>
+
+                  <td style={{ padding: "12px" }}>
+                    <select
+                      defaultValue=""
+                      disabled={report.status === "ASSIGNED"}
+                      onChange={(e) =>
+                        assignWorker(
+                          report.report_id,
+                          e.target.value
+                        )
+                      }
+                      style={{
+                        padding: "8px",
+                        borderRadius: "6px",
+                      }}
+                    >
+                      <option value="">
+                        Select Worker
+                      </option>
+
+                      {workers.map((worker) => (
+                        <option
+                          key={worker.user_id}
+                          value={worker.user_id}
+                        >
+                          {worker.full_name}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <style>
+        {`
+          .dashboard-card {
+            text-align: center;
+            padding: 25px;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            background: white;
+          }
+
+          .dashboard-icon {
+            font-size: 40px;
+          }
+
+          .dashboard-card h2 {
+            margin: 10px 0;
+          }
+
+          .dashboard-card h3 {
+            color: #0d6efd;
+            font-size: 28px;
+          }
+        `}
+      </style>
     </div>
   );
 }

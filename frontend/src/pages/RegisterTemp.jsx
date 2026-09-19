@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -13,7 +12,7 @@ export default function RegisterTemp() {
     address: "",
     municipality_area_name: "",
     municipality_number: "",
-    role: "Citizen",
+    role: "CITIZEN",
   });
 
   const [message, setMessage] = useState("");
@@ -59,10 +58,15 @@ export default function RegisterTemp() {
 
   return (
     <div className="container mt-5">
-      <div className="card p-4 mx-auto" style={{ maxWidth: "500px" }}>
+      <div
+        className="card p-4 mx-auto"
+        style={{ maxWidth: "500px" }}
+      >
         <h2 className="text-center mb-4">Register</h2>
 
-        {message && <p className="text-center">{message}</p>}
+        {message && (
+          <p className="text-center">{message}</p>
+        )}
 
         <form onSubmit={handleSubmit}>
           <input
@@ -130,19 +134,29 @@ export default function RegisterTemp() {
             required
           />
 
-          <input
+          <select
             className="form-control mb-3"
-            value="Citizen"
-            disabled
-          />
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+            required
+          >
+            <option value="CITIZEN">Citizen</option>
+            <option value="WORKER">Worker</option>
+            <option value="ADMIN">Admin</option>
+          </select>
 
-          <button className="btn btn-success w-100" type="submit">
+          <button
+            className="btn btn-success w-100"
+            type="submit"
+          >
             Register
           </button>
         </form>
 
         <p className="text-center mt-3">
-          Already have an account? <Link to="/login">Login</Link>
+          Already have an account?{" "}
+          <Link to="/login">Login</Link>
         </p>
       </div>
     </div>
