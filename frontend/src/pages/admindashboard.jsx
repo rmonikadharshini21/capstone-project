@@ -7,18 +7,26 @@ export default function AdminDashboard() {
 
   const [reports, setReports] = useState([]);
   const [workers, setWorkers] = useState([]);
+  const [feedback, setFeedback] = useState([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState("reports");
 
   const fetchData = async () => {
     try {
-      const [reportsResponse, workersResponse] = await Promise.all([
+      const [
+        reportsResponse,
+        workersResponse,
+        feedbackResponse,
+      ] = await Promise.all([
         API.get("/admin/reports"),
         API.get("/admin/workers"),
+        API.get("/admin/feedback"),
       ]);
 
       setReports(reportsResponse.data);
       setWorkers(workersResponse.data);
+      setFeedback(feedbackResponse.data);
     } catch (error) {
       setMessage(
         error.response?.data?.detail ||
@@ -43,7 +51,7 @@ export default function AdminDashboard() {
       });
 
       setMessage("Worker assigned successfully!");
-      fetchData();
+      await fetchData();
     } catch (error) {
       setMessage(
         error.response?.data?.detail ||
@@ -59,179 +67,262 @@ export default function AdminDashboard() {
   };
 
   const pendingReports = reports.filter(
-    (report) => report.status === "PENDING"
+    (report) => report.status?.toUpperCase() === "PENDING"
   ).length;
 
   const assignedReports = reports.filter(
-    (report) => report.status === "ASSIGNED"
+    (report) =>
+      ["ASSIGNED", "IN_PROGRESS"].includes(
+        report.status?.toUpperCase()
+      )
   ).length;
 
   const completedReports = reports.filter(
-    (report) => report.status === "COMPLETED"
+    (report) => report.status?.toUpperCase() === "COMPLETED"
   ).length;
 
-  return (
-    <div
+  const styles = {
+    page: {
+      minHeight: "100vh",
+      background: "linear-gradient(135deg, #edf8f0, #f8fffa)",
+      color: "#172b4d",
+      paddingBottom: "40px",
+      fontFamily: "Arial, sans-serif",
+    },
+
+    navbar: {
+      background: "linear-gradient(90deg, #146c43, #198754)",
+      color: "white",
+      padding: "18px 6%",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      flexWrap: "wrap",
+      gap: "15px",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+    },
+
+    container: {
+      maxWidth: "1200px",
+      margin: "0 auto",
+      padding: "35px 20px",
+    },
+
+    welcomeBanner: {
+      background: "linear-gradient(135deg, #198754, #20c997)",
+      color: "white",
+      borderRadius: "22px",
+      padding: "35px",
+      marginBottom: "35px",
+      boxShadow: "0 10px 25px rgba(25,135,84,0.18)",
+    },
+
+    card: {
+      backgroundColor: "white",
+      border: "1px solid #e1eee5",
+      borderRadius: "18px",
+      padding: "25px 20px",
+      textAlign: "center",
+      boxShadow: "0 7px 18px rgba(25,135,84,0.08)",
+      cursor: "pointer",
+    },
+
+    contentBox: {
+      backgroundColor: "white",
+      borderRadius: "18px",
+      padding: "28px",
+      marginTop: "30px",
+      boxShadow: "0 7px 18px rgba(25,135,84,0.08)",
+      border: "1px solid #e1eee5",
+    },
+
+    logout: {
+      backgroundColor: "white",
+      color: "#198754",
+      border: "none",
+      borderRadius: "22px",
+      padding: "11px 24px",
+      fontWeight: "bold",
+      cursor: "pointer",
+    },
+
+    sectionButton: (active) => ({
+      padding: "12px 22px",
+      border: "none",
+      borderRadius: "22px",
+      cursor: "pointer",
+      backgroundColor: active ? "#198754" : "#dff3e6",
+      color: active ? "white" : "#146c43",
+      fontWeight: "bold",
+    }),
+
+    cell: {
+      padding: "14px",
+      borderBottom: "1px solid #e5e7eb",
+      textAlign: "left",
+      verticalAlign: "top",
+    },
+
+    table: {
+      width: "100%",
+      borderCollapse: "collapse",
+      minWidth: "850px",
+    },
+
+    select: {
+      padding: "9px",
+      border: "1px solid #cedfd3",
+      borderRadius: "8px",
+      backgroundColor: "white",
+      cursor: "pointer",
+    },
+  };
+
+  const getStatusStyle = (status) => {
+    const currentStatus = status?.toUpperCase();
+
+    if (currentStatus === "COMPLETED") {
+      return {
+        backgroundColor: "#d1e7dd",
+        color: "#0f5132",
+      };
+    }
+
+    if (
+      currentStatus === "ASSIGNED" ||
+      currentStatus === "IN_PROGRESS"
+    ) {
+      return {
+        backgroundColor: "#cfe2ff",
+        color: "#084298",
+      };
+    }
+
+    if (currentStatus === "REJECTED") {
+      return {
+        backgroundColor: "#f8d7da",
+        color: "#842029",
+      };
+    }
+
+    return {
+      backgroundColor: "#fff3cd",
+      color: "#664d03",
+    };
+  };
+
+  const renderStatus = (status) => (
+    <span
       style={{
-        padding: "20px",
-        maxWidth: "1200px",
-        margin: "0 auto",
+        ...getStatusStyle(status),
+        padding: "6px 12px",
+        borderRadius: "20px",
+        fontSize: "12px",
+        fontWeight: "bold",
+        display: "inline-block",
+        whiteSpace: "nowrap",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div>
-          <h1>Admin Dashboard</h1>
-          <p>
-            Welcome, <strong>{user.full_name || "Admin"}</strong>
-          </p>
-        </div>
+      {status || "PENDING"}
+    </span>
+  );
 
-        <button
-          onClick={logout}
-          style={{
-            backgroundColor: "#dc3545",
-            color: "white",
-            border: "none",
-            padding: "12px 24px",
-            borderRadius: "8px",
-            cursor: "pointer",
-          }}
-        >
-          Logout
-        </button>
-      </div>
-
-      <hr />
-
-      <h2>Waste Management Services</h2>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: "20px",
-          marginTop: "20px",
-        }}
-      >
-        <div className="dashboard-card">
-          <div className="dashboard-icon">📋</div>
-          <h2>All Reports</h2>
-          <p>View all waste complaints</p>
-          <h3>{reports.length}</h3>
-        </div>
-
-        <div className="dashboard-card">
-          <div className="dashboard-icon">⏳</div>
-          <h2>Pending Reports</h2>
-          <p>Reports waiting for assignment</p>
-          <h3>{pendingReports}</h3>
-        </div>
-
-        <div className="dashboard-card">
-          <div className="dashboard-icon">🚛</div>
-          <h2>Assigned Reports</h2>
-          <p>Reports assigned to workers</p>
-          <h3>{assignedReports}</h3>
-        </div>
-
-        <div className="dashboard-card">
-          <div className="dashboard-icon">✅</div>
-          <h2>Completed Reports</h2>
-          <p>Completed waste collection</p>
-          <h3>{completedReports}</h3>
-        </div>
-      </div>
-
-      {message && (
-        <p
-          style={{
-            color: message.includes("successfully")
-              ? "green"
-              : "red",
-            marginTop: "20px",
-          }}
-        >
-          {message}
+  const renderReports = () => {
+    if (reports.length === 0) {
+      return (
+        <p style={{ color: "#6c757d" }}>
+          No reports available.
         </p>
-      )}
+      );
+    }
 
-      <h2 style={{ marginTop: "40px" }}>
-        Waste Complaint Management
-      </h2>
+    return (
+      <div style={{ overflowX: "auto" }}>
+        <table style={styles.table}>
+          <thead>
+            <tr
+              style={{
+                backgroundColor: "#146c43",
+                color: "white",
+              }}
+            >
+              <th style={styles.cell}>ID</th>
+              <th style={styles.cell}>Waste Type</th>
+              <th style={styles.cell}>Location</th>
+              <th style={styles.cell}>Description</th>
+              <th style={styles.cell}>Priority</th>
+              <th style={styles.cell}>Status</th>
+              <th style={styles.cell}>Assign Worker</th>
+            </tr>
+          </thead>
 
-      {loading ? (
-        <p>Loading reports...</p>
-      ) : reports.length === 0 ? (
-        <p>No reports available.</p>
-      ) : (
-        <div style={{ overflowX: "auto" }}>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              marginTop: "20px",
-            }}
-          >
-            <thead>
-              <tr style={{ backgroundColor: "#f2f2f2" }}>
-                <th style={{ padding: "12px" }}>ID</th>
-                <th style={{ padding: "12px" }}>Waste Type</th>
-                <th style={{ padding: "12px" }}>Location</th>
-                <th style={{ padding: "12px" }}>Description</th>
-                <th style={{ padding: "12px" }}>Priority</th>
-                <th style={{ padding: "12px" }}>Status</th>
-                <th style={{ padding: "12px" }}>Assign Worker</th>
-              </tr>
-            </thead>
+          <tbody>
+            {reports.map((report) => (
+              <tr key={report.report_id}>
+                <td style={styles.cell}>
+                  #{report.report_id}
+                </td>
 
-            <tbody>
-              {reports.map((report) => (
-                <tr key={report.report_id}>
-                  <td style={{ padding: "12px" }}>
-                    {report.report_id}
-                  </td>
+                <td style={styles.cell}>
+                  {report.waste_type}
+                </td>
 
-                  <td style={{ padding: "12px" }}>
-                    {report.waste_type}
-                  </td>
+                <td style={styles.cell}>
+                  {report.location}
+                </td>
 
-                  <td style={{ padding: "12px" }}>
-                    {report.location}
-                  </td>
+                <td style={styles.cell}>
+                  {report.description}
+                </td>
 
-                  <td style={{ padding: "12px" }}>
-                    {report.description}
-                  </td>
-
-                  <td style={{ padding: "12px" }}>
+                <td style={styles.cell}>
+                  <span
+                    style={{
+                      fontWeight: "bold",
+                      color:
+                        report.priority_level === "HIGH"
+                          ? "#dc3545"
+                          : "#6c757d",
+                    }}
+                  >
                     {report.priority_level || "MEDIUM"}
-                  </td>
+                  </span>
+                </td>
 
-                  <td style={{ padding: "12px" }}>
-                    {report.status}
-                  </td>
+                <td style={styles.cell}>
+                  {renderStatus(report.status)}
+                </td>
 
-                  <td style={{ padding: "12px" }}>
+                <td style={styles.cell}>
+                  {report.status?.toUpperCase() === "COMPLETED" ? (
+                    <span
+                      style={{
+                        color: "#198754",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      ✅ Completed
+                    </span>
+                  ) : report.status?.toUpperCase() === "ASSIGNED" ||
+                    report.status?.toUpperCase() === "IN_PROGRESS" ? (
+                    <span
+                      style={{
+                        color: "#b58105",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      🚛 Assigned
+                    </span>
+                  ) : (
                     <select
                       defaultValue=""
-                      disabled={report.status === "ASSIGNED"}
                       onChange={(e) =>
                         assignWorker(
                           report.report_id,
                           e.target.value
                         )
                       }
-                      style={{
-                        padding: "8px",
-                        borderRadius: "6px",
-                      }}
+                      style={styles.select}
                     >
                       <option value="">
                         Select Worker
@@ -246,39 +337,294 @@ export default function AdminDashboard() {
                         </option>
                       ))}
                     </select>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  const renderFeedback = () => {
+    if (feedback.length === 0) {
+      return (
+        <p style={{ color: "#6c757d" }}>
+          No citizen feedback available.
+        </p>
+      );
+    }
+
+    return (
+      <div style={{ overflowX: "auto" }}>
+        <table style={styles.table}>
+          <thead>
+            <tr
+              style={{
+                backgroundColor: "#146c43",
+                color: "white",
+              }}
+            >
+              <th style={styles.cell}>Feedback ID</th>
+              <th style={styles.cell}>Report ID</th>
+              <th style={styles.cell}>Citizen ID</th>
+              <th style={styles.cell}>Rating</th>
+              <th style={styles.cell}>Message</th>
+              <th style={styles.cell}>Date</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {feedback.map((item) => (
+              <tr key={item.feedback_id}>
+                <td style={styles.cell}>
+                  #{item.feedback_id}
+                </td>
+
+                <td style={styles.cell}>
+                  {item.report_id ?? "General"}
+                </td>
+
+                <td style={styles.cell}>
+                  {item.user_id}
+                </td>
+
+                <td style={styles.cell}>
+                  {"⭐".repeat(item.rating || 0)}
+                </td>
+
+                <td style={styles.cell}>
+                  {item.message}
+                </td>
+
+                <td style={styles.cell}>
+                  {item.created_at
+                    ? new Date(
+                        item.created_at
+                      ).toLocaleString()
+                    : "N/A"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  return (
+    <div style={styles.page}>
+      {/* NAVBAR */}
+      <nav style={styles.navbar}>
+        <div
+          style={{
+            fontSize: "22px",
+            fontWeight: "bold",
+          }}
+        >
+          🌿 Smart Waste Management
         </div>
-      )}
 
-      <style>
-        {`
-          .dashboard-card {
-            text-align: center;
-            padding: 25px;
-            border: 1px solid #ddd;
-            border-radius: 15px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-            background: white;
-          }
+        <button onClick={logout} style={styles.logout}>
+          Logout
+        </button>
+      </nav>
 
-          .dashboard-icon {
-            font-size: 40px;
-          }
+      <div style={styles.container}>
+        {/* WELCOME BANNER */}
+        <div style={styles.welcomeBanner}>
+          <h1 style={{ margin: "0 0 12px" }}>
+            Welcome, {user.full_name || "Admin"}! 👋
+          </h1>
 
-          .dashboard-card h2 {
-            margin: 10px 0;
-          }
+          <p style={{ margin: 0, fontSize: "17px" }}>
+            Manage waste complaints and coordinate collection
+            activities.
+          </p>
+        </div>
 
-          .dashboard-card h3 {
-            color: #0d6efd;
-            font-size: 28px;
-          }
-        `}
-      </style>
+        <div style={{ textAlign: "center", marginBottom: "25px" }}>
+          <h2 style={{ color: "#146c43" }}>
+            Admin Dashboard
+          </h2>
+
+          <p style={{ color: "#6c757d" }}>
+            Monitor reports, workers, and citizen feedback
+          </p>
+        </div>
+
+        {/* SUMMARY CARDS */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(auto-fit, minmax(190px, 1fr))",
+            gap: "20px",
+          }}
+        >
+          <div
+            style={styles.card}
+            onClick={() => setActiveSection("reports")}
+          >
+            <div style={{ fontSize: "38px" }}>📋</div>
+            <h3>All Reports</h3>
+            <p style={{ color: "#6c757d" }}>
+              Total waste complaints
+            </p>
+            <h2 style={{ color: "#198754" }}>
+              {reports.length}
+            </h2>
+          </div>
+
+          <div
+            style={styles.card}
+            onClick={() => setActiveSection("reports")}
+          >
+            <div style={{ fontSize: "38px" }}>⏳</div>
+            <h3>Pending</h3>
+            <p style={{ color: "#6c757d" }}>
+              Waiting for assignment
+            </p>
+            <h2 style={{ color: "#d39e00" }}>
+              {pendingReports}
+            </h2>
+          </div>
+
+          <div
+            style={styles.card}
+            onClick={() => setActiveSection("reports")}
+          >
+            <div style={{ fontSize: "38px" }}>🚛</div>
+            <h3>Assigned</h3>
+            <p style={{ color: "#6c757d" }}>
+              Assigned or in progress
+            </p>
+            <h2 style={{ color: "#0d6efd" }}>
+              {assignedReports}
+            </h2>
+          </div>
+
+          <div
+            style={styles.card}
+            onClick={() => setActiveSection("reports")}
+          >
+            <div style={{ fontSize: "38px" }}>✅</div>
+            <h3>Completed</h3>
+            <p style={{ color: "#6c757d" }}>
+              Finished collection work
+            </p>
+            <h2 style={{ color: "#198754" }}>
+              {completedReports}
+            </h2>
+          </div>
+
+          <div
+            style={styles.card}
+            onClick={() => setActiveSection("feedback")}
+          >
+            <div style={{ fontSize: "38px" }}>💬</div>
+            <h3>Feedback</h3>
+            <p style={{ color: "#6c757d" }}>
+              Citizen feedback
+            </p>
+            <h2 style={{ color: "#dc3545" }}>
+              {feedback.length}
+            </h2>
+          </div>
+        </div>
+
+        {/* MESSAGE */}
+        {message && (
+          <div
+            style={{
+              marginTop: "25px",
+              padding: "14px 18px",
+              borderRadius: "10px",
+              backgroundColor: message.includes("successfully")
+                ? "#d1e7dd"
+                : "#f8d7da",
+              color: message.includes("successfully")
+                ? "#0f5132"
+                : "#842029",
+            }}
+          >
+            {message}
+          </div>
+        )}
+
+        {/* SECTION BUTTONS */}
+        <div
+          style={{
+            display: "flex",
+            gap: "12px",
+            flexWrap: "wrap",
+            marginTop: "35px",
+          }}
+        >
+          <button
+            style={styles.sectionButton(activeSection === "reports")}
+            onClick={() => setActiveSection("reports")}
+          >
+            📋 Waste Reports
+          </button>
+
+          <button
+            style={styles.sectionButton(activeSection === "feedback")}
+            onClick={() => setActiveSection("feedback")}
+          >
+            💬 Citizen Feedback
+          </button>
+        </div>
+
+        {/* CONTENT */}
+        <div style={styles.contentBox}>
+          {loading ? (
+            <div style={{ textAlign: "center", padding: "30px" }}>
+              <h3>⏳ Loading admin data...</h3>
+              <p style={{ color: "#6c757d" }}>
+                Please wait while the information is loaded.
+              </p>
+            </div>
+          ) : activeSection === "reports" ? (
+            <>
+              <h2 style={{ color: "#146c43" }}>
+                🗑️ Waste Complaint Management
+              </h2>
+
+              <p style={{ color: "#6c757d" }}>
+                Review complaints and assign workers.
+              </p>
+
+              {renderReports()}
+            </>
+          ) : (
+            <>
+              <h2 style={{ color: "#146c43" }}>
+                💬 Citizen Feedback
+              </h2>
+
+              <p style={{ color: "#6c757d" }}>
+                Feedback received from citizens in your area.
+              </p>
+
+              {renderFeedback()}
+            </>
+          )}
+        </div>
+
+        {/* FOOTER */}
+        <footer
+          style={{
+            textAlign: "center",
+            marginTop: "45px",
+            color: "#6c757d",
+            fontSize: "14px",
+          }}
+        >
+          © 2026 Smart Waste Management System 🌿
+        </footer>
+      </div>
     </div>
   );
 }

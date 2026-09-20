@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
-export default function Login({ setAuth }) {
+export default function LoginTemp({ setAuth }) {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -11,6 +11,8 @@ export default function Login({ setAuth }) {
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -21,7 +23,9 @@ export default function Login({ setAuth }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setError("");
+    setLoading(true);
 
     try {
       const response = await fetch(
@@ -41,13 +45,30 @@ export default function Login({ setAuth }) {
         throw new Error(data.detail || "Login failed");
       }
 
+      // Save login details
       localStorage.setItem("token", data.access_token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      setAuth(true);
+      localStorage.setItem(
+        "loggedInUserEmail",
+        formData.email.trim().toLowerCase()
+      );
 
-      const role = data.user.role.toUpperCase();
+      localStorage.setItem(
+        "loggedInUser",
+        JSON.stringify(data)
+      );
 
+      // Update authentication
+      if (setAuth) {
+        setAuth(true);
+      }
+
+      // Support backend user response
+      const user = data.user || data;
+      const role = (user.role || "CITIZEN").toUpperCase();
+
+      // Navigate according to role
       if (role === "ADMIN") {
         navigate("/admin");
       } else if (role === "WORKER") {
@@ -56,66 +77,242 @@ export default function Login({ setAuth }) {
         navigate("/dashboard");
       }
     } catch (err) {
-      setError(err.message);
+      console.error("Login error:", err);
+      setError(err.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
+  const styles = {
+    page: {
+      minHeight: "100vh",
+      background:
+        "linear-gradient(135deg, #edf8f0, #f8fffa)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "25px 15px",
+      fontFamily: "Arial, sans-serif",
+    },
+
+    card: {
+      width: "100%",
+      maxWidth: "430px",
+      backgroundColor: "white",
+      borderRadius: "24px",
+      padding: "38px",
+      boxShadow:
+        "0 12px 35px rgba(25, 135, 84, 0.13)",
+      border: "1px solid #e1eee5",
+      boxSizing: "border-box",
+    },
+
+    input: {
+      width: "100%",
+      boxSizing: "border-box",
+      padding: "13px 14px",
+      border: "1px solid #cfe3d5",
+      borderRadius: "10px",
+      fontSize: "14px",
+      outline: "none",
+    },
+
+    label: {
+      display: "block",
+      fontWeight: "bold",
+      fontSize: "14px",
+      color: "#344054",
+      marginBottom: "8px",
+    },
+
+    button: {
+      width: "100%",
+      padding: "14px",
+      border: "none",
+      borderRadius: "12px",
+      background:
+        "linear-gradient(90deg, #146c43, #198754)",
+      color: "white",
+      fontWeight: "bold",
+      fontSize: "16px",
+      cursor: loading ? "not-allowed" : "pointer",
+      opacity: loading ? 0.7 : 1,
+    },
+  };
+
   return (
-    <div className="container py-5">
-      <div className="row justify-content-center">
-        <div className="col-md-5">
-          <div className="card p-4 shadow-sm">
-            <h2 className="text-center text-primary mb-3">
-              Login
-            </h2>
+    <div style={styles.page}>
+      <div style={styles.card}>
 
-            {error && (
-              <div className="alert alert-danger">
-                {error}
-              </div>
-            )}
+        {/* HEADER */}
+        <div
+          style={{
+            textAlign: "center",
+            marginBottom: "30px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "48px",
+              marginBottom: "12px",
+            }}
+          >
+            🌿
+          </div>
 
-            <form onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label className="form-label">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  className="form-control"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+          <h2
+            style={{
+              color: "#146c43",
+              fontWeight: "bold",
+              marginBottom: "10px",
+            }}
+          >
+            Smart Waste Management
+          </h2>
 
-              <div className="mb-3">
-                <label className="form-label">Password</label>
-                <input
-                  type="password"
-                  name="password"
-                  className="form-control"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+          <p
+            style={{
+              color: "#6c757d",
+              margin: 0,
+            }}
+          >
+            Welcome back! Login to your account
+          </p>
+        </div>
+
+        {/* ERROR MESSAGE */}
+        {error && (
+          <div
+            style={{
+              backgroundColor: "#f8d7da",
+              color: "#842029",
+              padding: "13px",
+              borderRadius: "10px",
+              marginBottom: "22px",
+              fontSize: "14px",
+              fontWeight: "bold",
+            }}
+          >
+            {error}
+          </div>
+        )}
+
+        {/* LOGIN FORM */}
+        <form onSubmit={handleSubmit}>
+
+          {/* EMAIL */}
+          <div style={{ marginBottom: "20px" }}>
+            <label style={styles.label}>
+              Email Address
+            </label>
+
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter your email address"
+              value={formData.email}
+              onChange={handleChange}
+              style={styles.input}
+              required
+            />
+          </div>
+
+          {/* PASSWORD */}
+          <div style={{ marginBottom: "25px" }}>
+            <label style={styles.label}>
+              Password
+            </label>
+
+            <div style={{ position: "relative" }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleChange}
+                style={{
+                  ...styles.input,
+                  paddingRight: "75px",
+                }}
+                required
+              />
 
               <button
-                type="submit"
-                className="btn btn-primary w-100"
+                type="button"
+                onClick={() =>
+                  setShowPassword(!showPassword)
+                }
+                style={{
+                  position: "absolute",
+                  right: "10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  border: "none",
+                  background: "transparent",
+                  color: "#198754",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  fontSize: "12px",
+                }}
               >
-                Login
+                {showPassword ? "Hide" : "Show"}
               </button>
-            </form>
-
-            <div className="text-center mt-3">
-              <small className="text-muted">
-                Don't have an account?{" "}
-                <Link to="/register">Register</Link>
-              </small>
             </div>
           </div>
+
+          {/* LOGIN BUTTON */}
+          <button
+            type="submit"
+            style={styles.button}
+            disabled={loading}
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
+
+        {/* REGISTER LINK */}
+        <div
+          style={{
+            textAlign: "center",
+            marginTop: "26px",
+          }}
+        >
+          <span
+            style={{
+              color: "#6c757d",
+              fontSize: "14px",
+            }}
+          >
+            Don't have an account?{" "}
+          </span>
+
+          <Link
+            to="/register"
+            style={{
+              color: "#198754",
+              fontWeight: "bold",
+              textDecoration: "none",
+              fontSize: "14px",
+            }}
+          >
+            Register
+          </Link>
         </div>
+
+        {/* FOOTER */}
+        <p
+          style={{
+            textAlign: "center",
+            color: "#98a2b3",
+            fontSize: "12px",
+            marginTop: "28px",
+            marginBottom: 0,
+          }}
+        >
+          © 2026 Smart Waste Management System 🌿
+        </p>
+
       </div>
     </div>
   );

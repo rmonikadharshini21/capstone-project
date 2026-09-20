@@ -49,7 +49,6 @@ export default function Dashboard() {
       });
 
       setMessage("Report submitted successfully!");
-
       setLocation("");
       setDescription("");
 
@@ -57,8 +56,7 @@ export default function Dashboard() {
       setActiveSection("reports");
     } catch (err) {
       setMessage(
-        err.response?.data?.detail ||
-          "Failed to submit report"
+        err.response?.data?.detail || "Failed to submit report"
       );
     }
   };
@@ -87,8 +85,7 @@ export default function Dashboard() {
       setFeedbackMessage("");
     } catch (err) {
       setFeedbackStatus(
-        err.response?.data?.detail ||
-          "Failed to submit feedback"
+        err.response?.data?.detail || "Failed to submit feedback"
       );
     }
   };
@@ -99,348 +96,566 @@ export default function Dashboard() {
     navigate("/login", { replace: true });
   };
 
-  const featureBoxStyle = {
-    border: "1px solid #ddd",
-    borderRadius: "12px",
-    padding: "25px",
+  const cardStyle = {
+    backgroundColor: "#ffffff",
+    borderRadius: "18px",
+    padding: "28px 20px",
     textAlign: "center",
     cursor: "pointer",
+    border: "1px solid #e4eee7",
+    boxShadow: "0 8px 20px rgba(25, 135, 84, 0.08)",
+    transition: "all 0.2s ease",
+  };
+
+  const sectionStyle = {
     backgroundColor: "#ffffff",
-    boxShadow: "0 3px 8px rgba(0,0,0,0.08)",
+    borderRadius: "18px",
+    padding: "28px",
+    marginTop: "30px",
+    boxShadow: "0 8px 20px rgba(25, 135, 84, 0.08)",
+    border: "1px solid #e4eee7",
   };
 
   const inputStyle = {
     width: "100%",
-    padding: "10px",
-    margin: "8px 0 15px",
-    border: "1px solid #ccc",
-    borderRadius: "6px",
+    padding: "12px 14px",
+    margin: "8px 0 18px",
+    border: "1px solid #cedfd3",
+    borderRadius: "10px",
     boxSizing: "border-box",
+    fontSize: "15px",
+    outline: "none",
   };
+
+  const primaryButtonStyle = {
+    padding: "12px 22px",
+    backgroundColor: "#198754",
+    color: "white",
+    border: "none",
+    borderRadius: "10px",
+    cursor: "pointer",
+    fontWeight: "600",
+  };
+
+  const getStatusStyle = (status) => {
+    const currentStatus = status?.toUpperCase();
+
+    if (currentStatus === "COMPLETED") {
+      return {
+        backgroundColor: "#d1e7dd",
+        color: "#0f5132",
+      };
+    }
+
+    if (currentStatus === "IN_PROGRESS") {
+      return {
+        backgroundColor: "#cfe2ff",
+        color: "#084298",
+      };
+    }
+
+    if (currentStatus === "REJECTED") {
+      return {
+        backgroundColor: "#f8d7da",
+        color: "#842029",
+      };
+    }
+
+    return {
+      backgroundColor: "#fff3cd",
+      color: "#664d03",
+    };
+  };
+
+  const renderStatus = (status) => (
+    <span
+      style={{
+        ...getStatusStyle(status),
+        padding: "6px 12px",
+        borderRadius: "20px",
+        fontSize: "12px",
+        fontWeight: "600",
+        display: "inline-block",
+      }}
+    >
+      {status || "PENDING"}
+    </span>
+  );
 
   return (
     <div
       style={{
-        padding: "20px",
-        maxWidth: "1100px",
-        margin: "0 auto",
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #edf8f0, #f8fffa)",
+        paddingBottom: "40px",
       }}
     >
-      <div
+      {/* NAVBAR */}
+      <nav
         style={{
+          background: "linear-gradient(90deg, #146c43, #198754)",
+          color: "white",
+          padding: "18px 6%",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: "25px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
         }}
       >
-        <div>
-          <h2>Citizen Dashboard</h2>
-
-          {user && (
-            <p>
-              Welcome, <strong>{user.full_name}</strong>
-            </p>
-          )}
+        <div style={{ fontSize: "21px", fontWeight: "700" }}>
+          🌿 Smart Waste Management
         </div>
 
         <button
           onClick={handleLogout}
           style={{
-            padding: "10px 18px",
-            backgroundColor: "#dc3545",
-            color: "white",
+            backgroundColor: "white",
+            color: "#198754",
             border: "none",
-            borderRadius: "6px",
+            borderRadius: "20px",
+            padding: "10px 20px",
+            fontWeight: "600",
             cursor: "pointer",
           }}
         >
           Logout
         </button>
-      </div>
+      </nav>
 
-      {role === "CITIZEN" && (
-        <>
-          <h3>Waste Management Services</h3>
+      <div
+        style={{
+          maxWidth: "1150px",
+          margin: "0 auto",
+          padding: "40px 20px",
+        }}
+      >
+        {/* WELCOME BANNER */}
+        <div
+          style={{
+            background: "linear-gradient(135deg, #198754, #20c997)",
+            color: "white",
+            borderRadius: "22px",
+            padding: "35px",
+            marginBottom: "35px",
+            boxShadow: "0 10px 25px rgba(25, 135, 84, 0.2)",
+          }}
+        >
+          <h1 style={{ margin: "0 0 12px", fontSize: "32px" }}>
+            Welcome, {user?.full_name || "Citizen"}! 👋
+          </h1>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fit, minmax(200px, 1fr))",
-              gap: "20px",
-              marginTop: "20px",
-            }}
-          >
-            <div
-              style={featureBoxStyle}
-              onClick={() => {
-                setActiveSection("report");
-                setMessage("");
-              }}
-            >
-              <h3>📋</h3>
-              <h4>Report Waste</h4>
-              <p>Submit a new waste complaint</p>
-            </div>
+          <p style={{ margin: 0, fontSize: "17px" }}>
+            Together, let's keep our environment clean and healthy. 🌍
+          </p>
+        </div>
 
-            <div
-              style={featureBoxStyle}
-              onClick={() => setActiveSection("reports")}
-            >
-              <h3>📄</h3>
-              <h4>My Reports</h4>
-              <p>View your submitted reports</p>
-            </div>
+        {/* HEADING */}
+        <div style={{ textAlign: "center", marginBottom: "25px" }}>
+          <h2 style={{ color: "#146c43", marginBottom: "8px" }}>
+            Waste Management Services
+          </h2>
 
-            <div
-              style={featureBoxStyle}
-              onClick={() => setActiveSection("status")}
-            >
-              <h3>📊</h3>
-              <h4>Track Status</h4>
-              <p>Check complaint progress</p>
-            </div>
+          <p style={{ color: "#6c757d" }}>
+            Report waste problems and track your complaints
+          </p>
+        </div>
 
-            <div
-              style={featureBoxStyle}
-              onClick={() => {
-                setActiveSection("feedback");
-                setFeedbackStatus("");
-              }}
-            >
-              <h3>💬</h3>
-              <h4>Feedback</h4>
-              <p>Share your service experience</p>
-            </div>
-          </div>
-
-          {message && (
-            <p
-              style={{
-                color: message.includes("successfully")
-                  ? "green"
-                  : "red",
-                marginTop: "20px",
-              }}
-            >
-              {message}
-            </p>
-          )}
-
-          {activeSection === "report" && (
+        {role === "CITIZEN" && (
+          <>
+            {/* SERVICE CARDS */}
             <div
               style={{
-                border: "1px solid #ddd",
-                borderRadius: "10px",
-                padding: "20px",
-                marginTop: "30px",
+                display: "grid",
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(210px, 1fr))",
+                gap: "22px",
               }}
             >
-              <h3>Submit a New Waste Report</h3>
+              <div
+                style={cardStyle}
+                onClick={() => {
+                  setActiveSection("report");
+                  setMessage("");
+                }}
+              >
+                <div style={{ fontSize: "42px", marginBottom: "12px" }}>
+                  🗑️
+                </div>
 
-              <form onSubmit={handleCreateReport}>
-                <label>Waste Type:</label>
+                <h3 style={{ color: "#198754" }}>Report Waste</h3>
 
-                <select
-                  value={wasteType}
-                  onChange={(e) => setWasteType(e.target.value)}
-                  style={inputStyle}
-                >
-                  <option value="Plastic">Plastic</option>
-                  <option value="Organic">Organic</option>
-                  <option value="Hazardous">Hazardous</option>
-                  <option value="E-Waste">E-Waste</option>
-                </select>
-
-                <label>Location:</label>
-
-                <input
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  required
-                  style={inputStyle}
-                />
-
-                <label>Description:</label>
-
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  required
-                  style={inputStyle}
-                />
+                <p style={{ color: "#6c757d" }}>
+                  Submit a new waste complaint
+                </p>
 
                 <button
-                  type="submit"
-                  style={{
-                    padding: "10px 18px",
-                    backgroundColor: "#38a169",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "6px",
-                    cursor: "pointer",
+                  style={primaryButtonStyle}
+                  onClick={() => {
+                    setActiveSection("report");
+                    setMessage("");
                   }}
                 >
-                  Submit Report
+                  Report Now →
                 </button>
-              </form>
+              </div>
+
+              <div
+                style={cardStyle}
+                onClick={() => setActiveSection("reports")}
+              >
+                <div style={{ fontSize: "42px", marginBottom: "12px" }}>
+                  📋
+                </div>
+
+                <h3 style={{ color: "#0d6efd" }}>My Reports</h3>
+
+                <p style={{ color: "#6c757d" }}>
+                  View your submitted reports
+                </p>
+
+                <button
+                  style={{
+                    ...primaryButtonStyle,
+                    backgroundColor: "#0d6efd",
+                  }}
+                  onClick={() => setActiveSection("reports")}
+                >
+                  View Reports →
+                </button>
+              </div>
+
+              <div
+                style={cardStyle}
+                onClick={() => setActiveSection("status")}
+              >
+                <div style={{ fontSize: "42px", marginBottom: "12px" }}>
+                  📊
+                </div>
+
+                <h3 style={{ color: "#b58105" }}>Track Status</h3>
+
+                <p style={{ color: "#6c757d" }}>
+                  Check complaint progress
+                </p>
+
+                <button
+                  style={{
+                    ...primaryButtonStyle,
+                    backgroundColor: "#d39e00",
+                  }}
+                  onClick={() => setActiveSection("status")}
+                >
+                  Track Status →
+                </button>
+              </div>
+
+              <div
+                style={cardStyle}
+                onClick={() => {
+                  setActiveSection("feedback");
+                  setFeedbackStatus("");
+                }}
+              >
+                <div style={{ fontSize: "42px", marginBottom: "12px" }}>
+                  💬
+                </div>
+
+                <h3 style={{ color: "#dc3545" }}>Feedback</h3>
+
+                <p style={{ color: "#6c757d" }}>
+                  Share your service experience
+                </p>
+
+                <button
+                  style={{
+                    ...primaryButtonStyle,
+                    backgroundColor: "#dc3545",
+                  }}
+                  onClick={() => {
+                    setActiveSection("feedback");
+                    setFeedbackStatus("");
+                  }}
+                >
+                  Give Feedback →
+                </button>
+              </div>
             </div>
-          )}
 
-          {(activeSection === "reports" ||
-            activeSection === "status") && (
-            <div style={{ marginTop: "30px" }}>
-              <h3>
-                {activeSection === "reports"
-                  ? "My Reports"
-                  : "Track Report Status"}
-              </h3>
+            {/* MESSAGE */}
+            {message && (
+              <div
+                style={{
+                  marginTop: "25px",
+                  padding: "14px 18px",
+                  borderRadius: "10px",
+                  backgroundColor: message.includes("successfully")
+                    ? "#d1e7dd"
+                    : "#f8d7da",
+                  color: message.includes("successfully")
+                    ? "#0f5132"
+                    : "#842029",
+                }}
+              >
+                {message}
+              </div>
+            )}
 
-              {reports.length === 0 ? (
-                <p>No reports found.</p>
-              ) : (
-                <div style={{ overflowX: "auto" }}>
-                  <table
+            {/* REPORT WASTE */}
+            {activeSection === "report" && (
+              <div style={sectionStyle}>
+                <h2 style={{ color: "#146c43" }}>
+                  🗑️ Submit a New Waste Report
+                </h2>
+
+                <form onSubmit={handleCreateReport}>
+                  <label>Waste Type:</label>
+
+                  <select
+                    value={wasteType}
+                    onChange={(e) => setWasteType(e.target.value)}
+                    style={inputStyle}
+                  >
+                    <option value="Plastic">Plastic</option>
+                    <option value="Organic">Organic</option>
+                    <option value="Hazardous">Hazardous</option>
+                    <option value="E-Waste">E-Waste</option>
+                  </select>
+
+                  <label>Location:</label>
+
+                  <input
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    required
+                    placeholder="Enter waste location"
+                    style={inputStyle}
+                  />
+
+                  <label>Description:</label>
+
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    required
+                    rows="5"
+                    placeholder="Describe the waste problem"
+                    style={inputStyle}
+                  />
+
+                  <button type="submit" style={primaryButtonStyle}>
+                    Submit Report
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* REPORTS AND STATUS */}
+            {(activeSection === "reports" ||
+              activeSection === "status") && (
+              <div style={sectionStyle}>
+                <h2 style={{ color: "#146c43" }}>
+                  {activeSection === "reports"
+                    ? "📋 My Reports"
+                    : "📊 Track Report Status"}
+                </h2>
+
+                {reports.length === 0 ? (
+                  <p style={{ color: "#6c757d" }}>
+                    No reports found.
+                  </p>
+                ) : (
+                  <div style={{ overflowX: "auto" }}>
+                    <table
+                      style={{
+                        width: "100%",
+                        borderCollapse: "collapse",
+                        minWidth:
+                          activeSection === "status"
+                            ? "950px"
+                            : "600px",
+                      }}
+                    >
+                      <thead>
+                        <tr
+                          style={{
+                            backgroundColor: "#146c43",
+                            color: "white",
+                            textAlign: "left",
+                          }}
+                        >
+                          <th style={{ padding: "14px" }}>ID</th>
+                          <th style={{ padding: "14px" }}>Type</th>
+                          <th style={{ padding: "14px" }}>Location</th>
+                          <th style={{ padding: "14px" }}>AI Tag</th>
+                          <th style={{ padding: "14px" }}>Priority</th>
+                          <th style={{ padding: "14px" }}>Status</th>
+
+                          {activeSection === "status" && (
+                            <>
+                              <th style={{ padding: "14px" }}>
+                                Worker Name
+                              </th>
+
+                              <th style={{ padding: "14px" }}>
+                                Worker Phone
+                              </th>
+                            </>
+                          )}
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {reports.map((report) => (
+                          <tr
+                            key={report.report_id}
+                            style={{
+                              borderBottom: "1px solid #e5e5e5",
+                            }}
+                          >
+                            <td style={{ padding: "14px" }}>
+                              {report.report_id}
+                            </td>
+
+                            <td style={{ padding: "14px" }}>
+                              {report.waste_type}
+                            </td>
+
+                            <td style={{ padding: "14px" }}>
+                              {report.location}
+                            </td>
+
+                            <td style={{ padding: "14px" }}>
+                              {report.ai_category || "N/A"}
+                            </td>
+
+                            <td style={{ padding: "14px" }}>
+                              {report.priority_level || "MEDIUM"}
+                            </td>
+
+                            <td style={{ padding: "14px" }}>
+                              {renderStatus(report.status)}
+                            </td>
+
+                            {activeSection === "status" && (
+                              <>
+                                <td style={{ padding: "14px" }}>
+                                  {report.worker_name || "Not assigned"}
+                                </td>
+
+                                <td style={{ padding: "14px" }}>
+                                  {report.worker_phone || "Not available"}
+                                </td>
+                              </>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* FEEDBACK */}
+            {activeSection === "feedback" && (
+              <div style={sectionStyle}>
+                <h2 style={{ color: "#146c43" }}>
+                  💬 Share Your Feedback
+                </h2>
+
+                <form onSubmit={handleSubmitFeedback}>
+                  <label>Select Report (Optional):</label>
+
+                  <select
+                    value={feedbackReportId}
+                    onChange={(e) => setFeedbackReportId(e.target.value)}
+                    style={inputStyle}
+                  >
+                    <option value="">General Feedback</option>
+
+                    {reports
+                      .filter(
+                        (report) =>
+                          report.status?.toUpperCase() === "COMPLETED"
+                      )
+                      .map((report) => (
+                        <option
+                          key={report.report_id}
+                          value={report.report_id}
+                        >
+                          Report #{report.report_id} -{" "}
+                          {report.waste_type}
+                        </option>
+                      ))}
+                  </select>
+
+                  <label>Rating:</label>
+
+                  <select
+                    value={rating}
+                    onChange={(e) => setRating(e.target.value)}
+                    style={inputStyle}
+                  >
+                    <option value="5">⭐⭐⭐⭐⭐ - Excellent</option>
+                    <option value="4">⭐⭐⭐⭐ - Good</option>
+                    <option value="3">⭐⭐⭐ - Average</option>
+                    <option value="2">⭐⭐ - Poor</option>
+                    <option value="1">⭐ - Very Poor</option>
+                  </select>
+
+                  <label>Feedback Message:</label>
+
+                  <textarea
+                    value={feedbackMessage}
+                    onChange={(e) => setFeedbackMessage(e.target.value)}
+                    required
+                    rows="5"
+                    placeholder="Write your feedback here..."
+                    style={inputStyle}
+                  />
+
+                  <button type="submit" style={primaryButtonStyle}>
+                    Submit Feedback
+                  </button>
+                </form>
+
+                {feedbackStatus && (
+                  <div
                     style={{
-                      width: "100%",
-                      borderCollapse: "collapse",
+                      marginTop: "20px",
+                      padding: "14px",
+                      borderRadius: "10px",
+                      backgroundColor: feedbackStatus.includes(
+                        "successfully"
+                      )
+                        ? "#d1e7dd"
+                        : "#f8d7da",
+                      color: feedbackStatus.includes("successfully")
+                        ? "#0f5132"
+                        : "#842029",
                     }}
                   >
-                    <thead>
-                      <tr
-                        style={{
-                          backgroundColor: "#f2f2f2",
-                          textAlign: "left",
-                        }}
-                      >
-                        <th>ID</th>
-                        <th>Type</th>
-                        <th>Location</th>
-                        <th>AI Tag</th>
-                        <th>Priority</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
+                    {feedbackStatus}
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
 
-                    <tbody>
-                      {reports.map((report) => (
-                        <tr key={report.report_id}>
-                          <td>{report.report_id}</td>
-                          <td>{report.waste_type}</td>
-                          <td>{report.location}</td>
-                          <td>{report.ai_category || "N/A"}</td>
-                          <td>
-                            {report.priority_level || "MEDIUM"}
-                          </td>
-                          <td>{report.status}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeSection === "feedback" && (
-            <div
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: "10px",
-                padding: "20px",
-                marginTop: "30px",
-              }}
-            >
-              <h3>Share Your Feedback</h3>
-
-              <form onSubmit={handleSubmitFeedback}>
-                <label>Select Report (Optional):</label>
-
-                <select
-                  value={feedbackReportId}
-                  onChange={(e) =>
-                    setFeedbackReportId(e.target.value)
-                  }
-                  style={inputStyle}
-                >
-                  <option value="">General Feedback</option>
-
-                  {reports
-                    .filter(
-                      (report) =>
-                        report.status?.toUpperCase() === "COMPLETED"
-                    )
-                    .map((report) => (
-                      <option
-                        key={report.report_id}
-                        value={report.report_id}
-                      >
-                        Report #{report.report_id} -{" "}
-                        {report.waste_type}
-                      </option>
-                    ))}
-                </select>
-
-                <label>Rating:</label>
-
-                <select
-                  value={rating}
-                  onChange={(e) => setRating(e.target.value)}
-                  style={inputStyle}
-                >
-                  <option value="5">⭐⭐⭐⭐⭐ - Excellent</option>
-                  <option value="4">⭐⭐⭐⭐ - Good</option>
-                  <option value="3">⭐⭐⭐ - Average</option>
-                  <option value="2">⭐⭐ - Poor</option>
-                  <option value="1">⭐ - Very Poor</option>
-                </select>
-
-                <label>Feedback Message:</label>
-
-                <textarea
-                  value={feedbackMessage}
-                  onChange={(e) =>
-                    setFeedbackMessage(e.target.value)
-                  }
-                  required
-                  rows="5"
-                  placeholder="Write your feedback here..."
-                  style={inputStyle}
-                />
-
-                <button
-                  type="submit"
-                  style={{
-                    padding: "10px 18px",
-                    backgroundColor: "#38a169",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                  }}
-                >
-                  Submit Feedback
-                </button>
-              </form>
-
-              {feedbackStatus && (
-                <p
-                  style={{
-                    color: feedbackStatus.includes("successfully")
-                      ? "green"
-                      : "red",
-                    marginTop: "15px",
-                  }}
-                >
-                  {feedbackStatus}
-                </p>
-              )}
-            </div>
-          )}
-        </>
-      )}
+        {/* FOOTER */}
+        <footer
+          style={{
+            textAlign: "center",
+            marginTop: "50px",
+            color: "#6c757d",
+            fontSize: "14px",
+          }}
+        >
+          © 2026 Smart Waste Management System 🌿
+        </footer>
+      </div>
     </div>
   );
 }

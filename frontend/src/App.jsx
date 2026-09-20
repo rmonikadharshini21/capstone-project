@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   BrowserRouter,
@@ -16,6 +17,7 @@ import WorkerDashboard from "./pages/WorkerDashboard.jsx";
 import MyReport from "./pages/myreport.jsx";
 import PublicDashboard from "./pages/publicdashboard.jsx";
 import ReportWaste from "./pages/reportwaste.jsx";
+import Feedback from "./pages/Feedback.jsx";
 
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
@@ -42,6 +44,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+
         {/* Home */}
         <Route
           path="/"
@@ -94,20 +97,44 @@ export default function App() {
           }
         />
 
-        {/* Other Pages */}
+        {/* Public Dashboard */}
         <Route
           path="/publicdashboard"
-          element={<PublicDashboard />}
+          element={
+            <ProtectedRoute allowedRole="CITIZEN">
+              <PublicDashboard />
+            </ProtectedRoute>
+          }
         />
 
+        {/* Report Waste */}
         <Route
           path="/reportwaste"
-          element={<ReportWaste />}
+          element={
+            <ProtectedRoute allowedRole="CITIZEN">
+              <ReportWaste />
+            </ProtectedRoute>
+          }
         />
 
+        {/* My Reports */}
         <Route
           path="/myreport"
-          element={<MyReport />}
+          element={
+            <ProtectedRoute allowedRole="CITIZEN">
+              <MyReport />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Feedback Page */}
+        <Route
+          path="/feedback"
+          element={
+            <ProtectedRoute allowedRole="CITIZEN">
+              <Feedback />
+            </ProtectedRoute>
+          }
         />
 
         {/* Unknown Page */}
@@ -115,6 +142,7 @@ export default function App() {
           path="*"
           element={<Navigate to="/login" replace />}
         />
+
       </Routes>
     </BrowserRouter>
   );
