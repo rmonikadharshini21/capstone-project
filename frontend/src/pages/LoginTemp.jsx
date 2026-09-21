@@ -30,34 +30,31 @@ export default function LoginTemp({ setAuth }) {
     setLoading(true);
 
     try {
-      const email = encodeURIComponent(
-        formData.email.trim()
-      );
-
-      const password = encodeURIComponent(
-        formData.password
-      );
-
-      const response = await fetch(
-        `${API_URL}/auth/login?email=${email}&password=${password}`,
-        {
-          method: "POST",
-        }
-      );
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email.trim().toLowerCase(),
+          password: formData.password,
+        }),
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.detail || "Login failed"
-        );
+        const errorMessage = Array.isArray(data.detail)
+          ? data.detail.map((item) => item.msg).join(", ")
+          : typeof data.detail === "object"
+          ? JSON.stringify(data.detail)
+          : data.detail || "Login failed";
+
+        throw new Error(errorMessage);
       }
 
       // Save token
-      localStorage.setItem(
-        "token",
-        data.access_token
-      );
+      localStorage.setItem("token", data.access_token);
 
       // Save user details
       localStorage.setItem(
@@ -95,14 +92,9 @@ export default function LoginTemp({ setAuth }) {
       } else {
         navigate("/dashboard");
       }
-
     } catch (err) {
       console.error("Login error:", err);
-
-      setError(
-        err.message || "Login failed"
-      );
-
+      setError(err.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -168,8 +160,6 @@ export default function LoginTemp({ setAuth }) {
   return (
     <div style={styles.page}>
       <div style={styles.card}>
-
-        {/* HEADER */}
         <div
           style={{
             textAlign: "center",
@@ -205,7 +195,6 @@ export default function LoginTemp({ setAuth }) {
           </p>
         </div>
 
-        {/* ERROR MESSAGE */}
         {error && (
           <div
             style={{
@@ -216,16 +205,14 @@ export default function LoginTemp({ setAuth }) {
               marginBottom: "22px",
               fontSize: "14px",
               fontWeight: "bold",
+              overflowWrap: "anywhere",
             }}
           >
             {error}
           </div>
         )}
 
-        {/* LOGIN FORM */}
         <form onSubmit={handleSubmit}>
-
-          {/* EMAIL */}
           <div style={{ marginBottom: "20px" }}>
             <label style={styles.label}>
               Email Address
@@ -242,7 +229,6 @@ export default function LoginTemp({ setAuth }) {
             />
           </div>
 
-          {/* PASSWORD */}
           <div style={{ marginBottom: "25px" }}>
             <label style={styles.label}>
               Password
@@ -250,9 +236,7 @@ export default function LoginTemp({ setAuth }) {
 
             <div style={{ position: "relative" }}>
               <input
-                type={
-                  showPassword ? "text" : "password"
-                }
+                type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Enter your password"
                 value={formData.password}
@@ -287,19 +271,15 @@ export default function LoginTemp({ setAuth }) {
             </div>
           </div>
 
-          {/* LOGIN BUTTON */}
           <button
             type="submit"
             style={styles.button}
             disabled={loading}
           >
-            {loading
-              ? "Logging in..."
-              : "Login"}
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
-        {/* REGISTER LINK */}
         <div
           style={{
             textAlign: "center",
@@ -328,7 +308,6 @@ export default function LoginTemp({ setAuth }) {
           </Link>
         </div>
 
-        {/* FOOTER */}
         <p
           style={{
             textAlign: "center",
@@ -340,7 +319,6 @@ export default function LoginTemp({ setAuth }) {
         >
           © 2026 Smart Waste Management System 🌿
         </p>
-
       </div>
     </div>
   );
