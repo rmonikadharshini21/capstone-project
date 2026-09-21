@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import API from "../services/api";
 
@@ -66,8 +65,11 @@ export default function AdminDashboard() {
     window.location.href = "/login";
   };
 
+  // REPORT STATISTICS
+
   const pendingReports = reports.filter(
-    (report) => report.status?.toUpperCase() === "PENDING"
+    (report) =>
+      report.status?.toUpperCase() === "PENDING"
   ).length;
 
   const assignedReports = reports.filter(
@@ -78,20 +80,38 @@ export default function AdminDashboard() {
   ).length;
 
   const completedReports = reports.filter(
-    (report) => report.status?.toUpperCase() === "COMPLETED"
+    (report) =>
+      report.status?.toUpperCase() === "COMPLETED"
   ).length;
+
+  // NEW STATISTICS
+
+  const totalWorkers = workers.length;
+
+  const averageRating =
+    feedback.length > 0
+      ? (
+          feedback.reduce(
+            (sum, item) =>
+              sum + Number(item.rating || 0),
+            0
+          ) / feedback.length
+        ).toFixed(1)
+      : "0.0";
 
   const styles = {
     page: {
       minHeight: "100vh",
-      background: "linear-gradient(135deg, #edf8f0, #f8fffa)",
+      background:
+        "linear-gradient(135deg, #edf8f0, #f8fffa)",
       color: "#172b4d",
       paddingBottom: "40px",
       fontFamily: "Arial, sans-serif",
     },
 
     navbar: {
-      background: "linear-gradient(90deg, #146c43, #198754)",
+      background:
+        "linear-gradient(90deg, #146c43, #198754)",
       color: "white",
       padding: "18px 6%",
       display: "flex",
@@ -109,12 +129,14 @@ export default function AdminDashboard() {
     },
 
     welcomeBanner: {
-      background: "linear-gradient(135deg, #198754, #20c997)",
+      background:
+        "linear-gradient(135deg, #198754, #20c997)",
       color: "white",
       borderRadius: "22px",
       padding: "35px",
       marginBottom: "35px",
-      boxShadow: "0 10px 25px rgba(25,135,84,0.18)",
+      boxShadow:
+        "0 10px 25px rgba(25,135,84,0.18)",
     },
 
     card: {
@@ -123,7 +145,8 @@ export default function AdminDashboard() {
       borderRadius: "18px",
       padding: "25px 20px",
       textAlign: "center",
-      boxShadow: "0 7px 18px rgba(25,135,84,0.08)",
+      boxShadow:
+        "0 7px 18px rgba(25,135,84,0.08)",
       cursor: "pointer",
     },
 
@@ -132,7 +155,8 @@ export default function AdminDashboard() {
       borderRadius: "18px",
       padding: "28px",
       marginTop: "30px",
-      boxShadow: "0 7px 18px rgba(25,135,84,0.08)",
+      boxShadow:
+        "0 7px 18px rgba(25,135,84,0.08)",
       border: "1px solid #e1eee5",
     },
 
@@ -151,7 +175,9 @@ export default function AdminDashboard() {
       border: "none",
       borderRadius: "22px",
       cursor: "pointer",
-      backgroundColor: active ? "#198754" : "#dff3e6",
+      backgroundColor: active
+        ? "#198754"
+        : "#dff3e6",
       color: active ? "white" : "#146c43",
       fontWeight: "bold",
     }),
@@ -252,7 +278,9 @@ export default function AdminDashboard() {
               <th style={styles.cell}>Description</th>
               <th style={styles.cell}>Priority</th>
               <th style={styles.cell}>Status</th>
-              <th style={styles.cell}>Assign Worker</th>
+              <th style={styles.cell}>
+                Assign Worker
+              </th>
             </tr>
           </thead>
 
@@ -294,7 +322,8 @@ export default function AdminDashboard() {
                 </td>
 
                 <td style={styles.cell}>
-                  {report.status?.toUpperCase() === "COMPLETED" ? (
+                  {report.status?.toUpperCase() ===
+                  "COMPLETED" ? (
                     <span
                       style={{
                         color: "#198754",
@@ -303,8 +332,10 @@ export default function AdminDashboard() {
                     >
                       ✅ Completed
                     </span>
-                  ) : report.status?.toUpperCase() === "ASSIGNED" ||
-                    report.status?.toUpperCase() === "IN_PROGRESS" ? (
+                  ) : report.status?.toUpperCase() ===
+                      "ASSIGNED" ||
+                    report.status?.toUpperCase() ===
+                      "IN_PROGRESS" ? (
                     <span
                       style={{
                         color: "#b58105",
@@ -366,7 +397,9 @@ export default function AdminDashboard() {
                 color: "white",
               }}
             >
-              <th style={styles.cell}>Feedback ID</th>
+              <th style={styles.cell}>
+                Feedback ID
+              </th>
               <th style={styles.cell}>Report ID</th>
               <th style={styles.cell}>Citizen ID</th>
               <th style={styles.cell}>Rating</th>
@@ -416,6 +449,7 @@ export default function AdminDashboard() {
   return (
     <div style={styles.page}>
       {/* NAVBAR */}
+
       <nav style={styles.navbar}>
         <div
           style={{
@@ -426,35 +460,46 @@ export default function AdminDashboard() {
           🌿 Smart Waste Management
         </div>
 
-        <button onClick={logout} style={styles.logout}>
+        <button
+          onClick={logout}
+          style={styles.logout}
+        >
           Logout
         </button>
       </nav>
 
       <div style={styles.container}>
         {/* WELCOME BANNER */}
+
         <div style={styles.welcomeBanner}>
           <h1 style={{ margin: "0 0 12px" }}>
             Welcome, {user.full_name || "Admin"}! 👋
           </h1>
 
           <p style={{ margin: 0, fontSize: "17px" }}>
-            Manage waste complaints and coordinate collection
-            activities.
+            Manage waste complaints and coordinate
+            collection activities.
           </p>
         </div>
 
-        <div style={{ textAlign: "center", marginBottom: "25px" }}>
+        <div
+          style={{
+            textAlign: "center",
+            marginBottom: "25px",
+          }}
+        >
           <h2 style={{ color: "#146c43" }}>
             Admin Dashboard
           </h2>
 
           <p style={{ color: "#6c757d" }}>
-            Monitor reports, workers, and citizen feedback
+            Monitor reports, workers, and citizen
+            feedback
           </p>
         </div>
 
         {/* SUMMARY CARDS */}
+
         <div
           style={{
             display: "grid",
@@ -463,90 +508,170 @@ export default function AdminDashboard() {
             gap: "20px",
           }}
         >
+          {/* ALL REPORTS */}
+
           <div
             style={styles.card}
             onClick={() => setActiveSection("reports")}
           >
-            <div style={{ fontSize: "38px" }}>📋</div>
+            <div style={{ fontSize: "38px" }}>
+              📋
+            </div>
+
             <h3>All Reports</h3>
+
             <p style={{ color: "#6c757d" }}>
               Total waste complaints
             </p>
+
             <h2 style={{ color: "#198754" }}>
               {reports.length}
             </h2>
           </div>
 
+          {/* PENDING */}
+
           <div
             style={styles.card}
             onClick={() => setActiveSection("reports")}
           >
-            <div style={{ fontSize: "38px" }}>⏳</div>
+            <div style={{ fontSize: "38px" }}>
+              ⏳
+            </div>
+
             <h3>Pending</h3>
+
             <p style={{ color: "#6c757d" }}>
               Waiting for assignment
             </p>
+
             <h2 style={{ color: "#d39e00" }}>
               {pendingReports}
             </h2>
           </div>
 
+          {/* ASSIGNED */}
+
           <div
             style={styles.card}
             onClick={() => setActiveSection("reports")}
           >
-            <div style={{ fontSize: "38px" }}>🚛</div>
+            <div style={{ fontSize: "38px" }}>
+              🚛
+            </div>
+
             <h3>Assigned</h3>
+
             <p style={{ color: "#6c757d" }}>
               Assigned or in progress
             </p>
+
             <h2 style={{ color: "#0d6efd" }}>
               {assignedReports}
             </h2>
           </div>
 
+          {/* COMPLETED */}
+
           <div
             style={styles.card}
             onClick={() => setActiveSection("reports")}
           >
-            <div style={{ fontSize: "38px" }}>✅</div>
+            <div style={{ fontSize: "38px" }}>
+              ✅
+            </div>
+
             <h3>Completed</h3>
+
             <p style={{ color: "#6c757d" }}>
               Finished collection work
             </p>
+
             <h2 style={{ color: "#198754" }}>
               {completedReports}
             </h2>
           </div>
 
+          {/* FEEDBACK */}
+
           <div
             style={styles.card}
             onClick={() => setActiveSection("feedback")}
           >
-            <div style={{ fontSize: "38px" }}>💬</div>
+            <div style={{ fontSize: "38px" }}>
+              💬
+            </div>
+
             <h3>Feedback</h3>
+
             <p style={{ color: "#6c757d" }}>
               Citizen feedback
             </p>
+
             <h2 style={{ color: "#dc3545" }}>
               {feedback.length}
+            </h2>
+          </div>
+
+          {/* TOTAL WORKERS - NEW */}
+
+          <div
+            style={styles.card}
+            onClick={() => setActiveSection("reports")}
+          >
+            <div style={{ fontSize: "38px" }}>
+              👷
+            </div>
+
+            <h3>Total Workers</h3>
+
+            <p style={{ color: "#6c757d" }}>
+              Registered workers
+            </p>
+
+            <h2 style={{ color: "#0d6efd" }}>
+              {totalWorkers}
+            </h2>
+          </div>
+
+          {/* AVERAGE RATING - NEW */}
+
+          <div
+            style={styles.card}
+            onClick={() => setActiveSection("feedback")}
+          >
+            <div style={{ fontSize: "38px" }}>
+              ⭐
+            </div>
+
+            <h3>Average Rating</h3>
+
+            <p style={{ color: "#6c757d" }}>
+              Citizen satisfaction
+            </p>
+
+            <h2 style={{ color: "#f0ad4e" }}>
+              ⭐ {averageRating} / 5
             </h2>
           </div>
         </div>
 
         {/* MESSAGE */}
+
         {message && (
           <div
             style={{
               marginTop: "25px",
               padding: "14px 18px",
               borderRadius: "10px",
-              backgroundColor: message.includes("successfully")
-                ? "#d1e7dd"
-                : "#f8d7da",
-              color: message.includes("successfully")
-                ? "#0f5132"
-                : "#842029",
+              backgroundColor:
+                message.includes("successfully")
+                  ? "#d1e7dd"
+                  : "#f8d7da",
+              color:
+                message.includes("successfully")
+                  ? "#0f5132"
+                  : "#842029",
             }}
           >
             {message}
@@ -554,6 +679,7 @@ export default function AdminDashboard() {
         )}
 
         {/* SECTION BUTTONS */}
+
         <div
           style={{
             display: "flex",
@@ -563,14 +689,18 @@ export default function AdminDashboard() {
           }}
         >
           <button
-            style={styles.sectionButton(activeSection === "reports")}
+            style={styles.sectionButton(
+              activeSection === "reports"
+            )}
             onClick={() => setActiveSection("reports")}
           >
             📋 Waste Reports
           </button>
 
           <button
-            style={styles.sectionButton(activeSection === "feedback")}
+            style={styles.sectionButton(
+              activeSection === "feedback"
+            )}
             onClick={() => setActiveSection("feedback")}
           >
             💬 Citizen Feedback
@@ -578,12 +708,20 @@ export default function AdminDashboard() {
         </div>
 
         {/* CONTENT */}
+
         <div style={styles.contentBox}>
           {loading ? (
-            <div style={{ textAlign: "center", padding: "30px" }}>
+            <div
+              style={{
+                textAlign: "center",
+                padding: "30px",
+              }}
+            >
               <h3>⏳ Loading admin data...</h3>
+
               <p style={{ color: "#6c757d" }}>
-                Please wait while the information is loaded.
+                Please wait while the information
+                is loaded.
               </p>
             </div>
           ) : activeSection === "reports" ? (
@@ -605,7 +743,8 @@ export default function AdminDashboard() {
               </h2>
 
               <p style={{ color: "#6c757d" }}>
-                Feedback received from citizens in your area.
+                Feedback received from citizens in
+                your area.
               </p>
 
               {renderFeedback()}
@@ -614,6 +753,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* FOOTER */}
+
         <footer
           style={{
             textAlign: "center",
