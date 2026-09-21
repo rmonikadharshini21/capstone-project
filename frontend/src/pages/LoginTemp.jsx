@@ -2,6 +2,32 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
+// Convert backend errors into readable text
+const getErrorMessage = (detail) => {
+  if (typeof detail === "string") {
+    return detail;
+  }
+
+  if (Array.isArray(detail)) {
+    return detail
+      .map((item) => {
+        if (typeof item === "string") return item;
+        return item.msg || JSON.stringify(item);
+      })
+      .join(", ");
+  }
+
+  if (detail && typeof detail === "object") {
+    return (
+      detail.message ||
+      detail.msg ||
+      JSON.stringify(detail)
+    );
+  }
+
+  return "Login failed";
+};
+
 export default function LoginTemp({ setAuth }) {
   const navigate = useNavigate();
 
@@ -14,7 +40,8 @@ export default function LoginTemp({ setAuth }) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const API_URL = "https://capstone-project-ds0d.onrender.com";
+  const API_URL =
+    "https://capstone-project-ds0d.onrender.com";
 
   const handleChange = (e) => {
     setFormData({
@@ -30,36 +57,44 @@ export default function LoginTemp({ setAuth }) {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: formData.email.trim().toLowerCase(),
-          password: formData.password,
-        }),
-      });
+      const response = await fetch(
+        `${API_URL}/auth/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: formData.email.trim().toLowerCase(),
+            password: formData.password,
+          }),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        const errorMessage = Array.isArray(data.detail)
-          ? data.detail.map((item) => item.msg).join(", ")
-          : typeof data.detail === "object"
-          ? JSON.stringify(data.detail)
-          : data.detail || "Login failed";
+        const errorMessage = getErrorMessage(
+          data.detail || data.message || data.error
+        );
 
         throw new Error(errorMessage);
       }
 
+      if (!data.access_token) {
+        throw new Error("Login successful, but token is missing");
+      }
+
       // Save token
-      localStorage.setItem("token", data.access_token);
+      localStorage.setItem(
+        "token",
+        data.access_token
+      );
 
       // Save user details
       localStorage.setItem(
         "user",
-        JSON.stringify(data.user)
+        JSON.stringify(data.user || data)
       );
 
       localStorage.setItem(
@@ -80,7 +115,7 @@ export default function LoginTemp({ setAuth }) {
       // Get user role
       const user = data.user || data;
 
-      const role = (
+      const role = String(
         user.role || "CITIZEN"
       ).toUpperCase();
 
@@ -94,7 +129,12 @@ export default function LoginTemp({ setAuth }) {
       }
     } catch (err) {
       console.error("Login error:", err);
-      setError(err.message || "Login failed");
+
+      setError(
+        typeof err.message === "string"
+          ? err.message
+          : JSON.stringify(err.message)
+      );
     } finally {
       setLoading(false);
     }
@@ -160,6 +200,8 @@ export default function LoginTemp({ setAuth }) {
   return (
     <div style={styles.page}>
       <div style={styles.card}>
+
+        {/* HEADER */}
         <div
           style={{
             textAlign: "center",
@@ -195,6 +237,7 @@ export default function LoginTemp({ setAuth }) {
           </p>
         </div>
 
+        {/* ERROR MESSAGE */}
         {error && (
           <div
             style={{
@@ -208,11 +251,14 @@ export default function LoginTemp({ setAuth }) {
               overflowWrap: "anywhere",
             }}
           >
-            {error}
+            {String(error)}
           </div>
         )}
 
+        {/* LOGIN FORM */}
         <form onSubmit={handleSubmit}>
+
+          {/* EMAIL */}
           <div style={{ marginBottom: "20px" }}>
             <label style={styles.label}>
               Email Address
@@ -229,6 +275,7 @@ export default function LoginTemp({ setAuth }) {
             />
           </div>
 
+          {/* PASSWORD */}
           <div style={{ marginBottom: "25px" }}>
             <label style={styles.label}>
               Password
@@ -236,7 +283,9 @@ export default function LoginTemp({ setAuth }) {
 
             <div style={{ position: "relative" }}>
               <input
-                type={showPassword ? "text" : "password"}
+                type={
+                  showPassword ? "text" : "password"
+                }
                 name="password"
                 placeholder="Enter your password"
                 value={formData.password}
@@ -271,6 +320,7 @@ export default function LoginTemp({ setAuth }) {
             </div>
           </div>
 
+          {/* LOGIN BUTTON */}
           <button
             type="submit"
             style={styles.button}
@@ -280,6 +330,7 @@ export default function LoginTemp({ setAuth }) {
           </button>
         </form>
 
+        {/* REGISTER LINK */}
         <div
           style={{
             textAlign: "center",
@@ -308,6 +359,7 @@ export default function LoginTemp({ setAuth }) {
           </Link>
         </div>
 
+        {/* FOOTER */}
         <p
           style={{
             textAlign: "center",
@@ -319,6 +371,7 @@ export default function LoginTemp({ setAuth }) {
         >
           © 2026 Smart Waste Management System 🌿
         </p>
+
       </div>
     </div>
   );

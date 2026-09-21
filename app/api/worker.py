@@ -5,11 +5,13 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.api.deps import get_current_user
 from app.models.user import User
+from app.models.waste import WasteReport, Feedback
 
 from app.schemas.waste import (
     WasteReportResponse,
     WorkerAssignmentDecision,
-    ExtensionRequest
+    ExtensionRequest,
+    FeedbackResponse
 )
 
 from app.services.worker_service import (
@@ -154,3 +156,32 @@ def create_extension_request(
         )
 
     return report
+
+
+# ==============================
+# GET WORKER FEEDBACK
+# ==============================
+
+@router.get(
+    "/feedback",
+    response_model=list[FeedbackResponse]
+)
+def get_worker_feedback(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    check_worker(current_user)
+
+    feedback_list = (
+        db.query(Feedback)
+        .join(
+            WasteReport,
+            Feedback.report_id == WasteReport.report_id
+        )
+        .filter(
+            WasteReport.worker_id == current_user.user_id
+        )
+        .all()
+    )
+
+    return feedback_list
