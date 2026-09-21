@@ -12,31 +12,36 @@ function Register() {
   const [address, setAddress] = useState("");
   const [areaName, setAreaName] = useState("");
   const [municipalityNumber, setMunicipalityNumber] = useState("");
-  const [role, setRole] = useState("PUBLIC");
+  const [role, setRole] = useState("CITIZEN");
+
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const API_URL =
+    "https://capstone-project-ds0d.onrender.com";
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setLoading(true);
     setMessage("Registering your account...");
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/auth/register",
+        `${API_URL}/auth/register`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            full_name: fullName,
-            email,
+            full_name: fullName.trim(),
+            email: email.trim().toLowerCase(),
             password,
-            phone,
-            address,
-            municipality_area_name: areaName,
-            municipality_number: municipalityNumber,
+            phone: phone.trim(),
+            address: address.trim(),
+            municipality_area_name: areaName.trim(),
+            municipality_number: municipalityNumber.trim(),
             role,
           }),
         }
@@ -45,10 +50,18 @@ function Register() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.detail || "Registration failed");
+        const errorMessage = Array.isArray(data.detail)
+          ? data.detail
+              .map((error) => error.msg)
+              .join(", ")
+          : data.detail || "Registration failed";
+
+        throw new Error(errorMessage);
       }
 
-      setMessage("Registration successful! You can now login.");
+      setMessage(
+        "Registration successful! Redirecting to login..."
+      );
 
       setFullName("");
       setEmail("");
@@ -57,10 +70,19 @@ function Register() {
       setAddress("");
       setAreaName("");
       setMunicipalityNumber("");
-      setRole("PUBLIC");
+      setRole("CITIZEN");
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
+
     } catch (error) {
       console.error("Register error:", error);
-      setMessage(error.message);
+
+      setMessage(
+        error.message || "Registration failed"
+      );
+
     } finally {
       setLoading(false);
     }
@@ -69,7 +91,8 @@ function Register() {
   const styles = {
     page: {
       minHeight: "100vh",
-      background: "linear-gradient(135deg, #edf8f0, #f8fffa)",
+      background:
+        "linear-gradient(135deg, #edf8f0, #f8fffa)",
       padding: "35px 15px",
       fontFamily: "Arial, sans-serif",
     },
@@ -81,8 +104,10 @@ function Register() {
       backgroundColor: "white",
       borderRadius: "24px",
       padding: "35px",
-      boxShadow: "0 12px 35px rgba(25, 135, 84, 0.13)",
+      boxShadow:
+        "0 12px 35px rgba(25, 135, 84, 0.13)",
       border: "1px solid #e1eee5",
+      boxSizing: "border-box",
     },
 
     input: {
@@ -108,7 +133,8 @@ function Register() {
       border: "none",
       borderRadius: "12px",
       padding: "14px",
-      background: "linear-gradient(90deg, #146c43, #198754)",
+      background:
+        "linear-gradient(90deg, #146c43, #198754)",
       color: "white",
       fontWeight: "bold",
       fontSize: "16px",
@@ -124,8 +150,14 @@ function Register() {
   return (
     <div style={styles.page}>
       <div style={styles.card}>
+
         {/* HEADER */}
-        <div style={{ textAlign: "center", marginBottom: "30px" }}>
+        <div
+          style={{
+            textAlign: "center",
+            marginBottom: "30px",
+          }}
+        >
           <div
             style={{
               fontSize: "45px",
@@ -145,7 +177,12 @@ function Register() {
             Smart Waste Management
           </h2>
 
-          <p style={{ color: "#6c757d", margin: 0 }}>
+          <p
+            style={{
+              color: "#6c757d",
+              margin: 0,
+            }}
+          >
             Create your account and keep your environment clean
           </p>
         </div>
@@ -175,10 +212,14 @@ function Register() {
           </div>
         )}
 
+        {/* REGISTRATION FORM */}
         <form onSubmit={handleSubmit}>
+
           {/* FULL NAME */}
           <div style={styles.field}>
-            <label style={styles.label}>Full Name</label>
+            <label style={styles.label}>
+              Full Name
+            </label>
 
             <input
               type="text"
@@ -192,7 +233,9 @@ function Register() {
 
           {/* EMAIL */}
           <div style={styles.field}>
-            <label style={styles.label}>Email Address</label>
+            <label style={styles.label}>
+              Email Address
+            </label>
 
             <input
               type="email"
@@ -206,7 +249,9 @@ function Register() {
 
           {/* PASSWORD */}
           <div style={styles.field}>
-            <label style={styles.label}>Password</label>
+            <label style={styles.label}>
+              Password
+            </label>
 
             <input
               type="password"
@@ -221,7 +266,9 @@ function Register() {
 
           {/* PHONE */}
           <div style={styles.field}>
-            <label style={styles.label}>Phone Number</label>
+            <label style={styles.label}>
+              Phone Number
+            </label>
 
             <input
               type="tel"
@@ -235,7 +282,9 @@ function Register() {
 
           {/* ADDRESS */}
           <div style={styles.field}>
-            <label style={styles.label}>Address</label>
+            <label style={styles.label}>
+              Address
+            </label>
 
             <textarea
               placeholder="Enter your complete address"
@@ -286,7 +335,9 @@ function Register() {
 
           {/* ROLE */}
           <div style={styles.field}>
-            <label style={styles.label}>Account Type</label>
+            <label style={styles.label}>
+              Account Type
+            </label>
 
             <select
               value={role}
@@ -294,9 +345,17 @@ function Register() {
               style={styles.input}
               required
             >
-              <option value="PUBLIC">Public</option>
-              <option value="WORKER">Worker</option>
-              <option value="ADMIN">Admin</option>
+              <option value="CITIZEN">
+                Citizen
+              </option>
+
+              <option value="WORKER">
+                Worker
+              </option>
+
+              <option value="ADMIN">
+                Admin
+              </option>
             </select>
           </div>
 
@@ -306,7 +365,9 @@ function Register() {
             style={styles.button}
             disabled={loading}
           >
-            {loading ? "Creating Account..." : "Create Account"}
+            {loading
+              ? "Creating Account..."
+              : "Create Account"}
           </button>
         </form>
 
@@ -317,13 +378,18 @@ function Register() {
             marginTop: "25px",
           }}
         >
-          <span style={{ color: "#6c757d", fontSize: "14px" }}>
+          <span
+            style={{
+              color: "#6c757d",
+              fontSize: "14px",
+            }}
+          >
             Already have an account?{" "}
           </span>
 
           <button
             type="button"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/login")}
             style={{
               background: "none",
               border: "none",
@@ -337,6 +403,7 @@ function Register() {
           </button>
         </div>
 
+        {/* FOOTER */}
         <p
           style={{
             textAlign: "center",
@@ -348,6 +415,7 @@ function Register() {
         >
           © 2026 Smart Waste Management System 🌿
         </p>
+
       </div>
     </div>
   );

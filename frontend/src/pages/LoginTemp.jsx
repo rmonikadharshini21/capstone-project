@@ -14,6 +14,8 @@ export default function LoginTemp({ setAuth }) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const API_URL = "https://capstone-project-ds0d.onrender.com";
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -28,26 +30,40 @@ export default function LoginTemp({ setAuth }) {
     setLoading(true);
 
     try {
+      const email = encodeURIComponent(
+        formData.email.trim()
+      );
+
+      const password = encodeURIComponent(
+        formData.password
+      );
+
       const response = await fetch(
-        "http://127.0.0.1:8000/auth/login",
+        `${API_URL}/auth/login?email=${email}&password=${password}`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
         }
       );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.detail || "Login failed");
+        throw new Error(
+          data.detail || "Login failed"
+        );
       }
 
-      // Save login details
-      localStorage.setItem("token", data.access_token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      // Save token
+      localStorage.setItem(
+        "token",
+        data.access_token
+      );
+
+      // Save user details
+      localStorage.setItem(
+        "user",
+        JSON.stringify(data.user)
+      );
 
       localStorage.setItem(
         "loggedInUserEmail",
@@ -64,11 +80,14 @@ export default function LoginTemp({ setAuth }) {
         setAuth(true);
       }
 
-      // Support backend user response
+      // Get user role
       const user = data.user || data;
-      const role = (user.role || "CITIZEN").toUpperCase();
 
-      // Navigate according to role
+      const role = (
+        user.role || "CITIZEN"
+      ).toUpperCase();
+
+      // Navigate based on role
       if (role === "ADMIN") {
         navigate("/admin");
       } else if (role === "WORKER") {
@@ -76,9 +95,14 @@ export default function LoginTemp({ setAuth }) {
       } else {
         navigate("/dashboard");
       }
+
     } catch (err) {
       console.error("Login error:", err);
-      setError(err.message || "Login failed");
+
+      setError(
+        err.message || "Login failed"
+      );
+
     } finally {
       setLoading(false);
     }
@@ -226,7 +250,9 @@ export default function LoginTemp({ setAuth }) {
 
             <div style={{ position: "relative" }}>
               <input
-                type={showPassword ? "text" : "password"}
+                type={
+                  showPassword ? "text" : "password"
+                }
                 name="password"
                 placeholder="Enter your password"
                 value={formData.password}
@@ -267,7 +293,9 @@ export default function LoginTemp({ setAuth }) {
             style={styles.button}
             disabled={loading}
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading
+              ? "Logging in..."
+              : "Login"}
           </button>
         </form>
 

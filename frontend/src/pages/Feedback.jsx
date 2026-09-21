@@ -1,6 +1,10 @@
+
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Feedback() {
+  const navigate = useNavigate();
+
   const [reportId, setReportId] = useState("");
   const [rating, setRating] = useState(5);
   const [message, setMessage] = useState("");
@@ -19,6 +23,19 @@ function Feedback() {
 
     const token = localStorage.getItem("token");
 
+    if (!token) {
+      setError("Please login before submitting feedback.");
+      setLoading(false);
+      navigate("/login");
+      return;
+    }
+
+    const feedbackData = {
+      report_id: reportId ? Number(reportId) : null,
+      rating: Number(rating),
+      message: message.trim(),
+    };
+
     try {
       const response = await fetch(
         `${API_URL}/waste/feedback`,
@@ -28,11 +45,7 @@ function Feedback() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            report_id: reportId ? Number(reportId) : null,
-            rating: Number(rating),
-            message: message,
-          }),
+          body: JSON.stringify(feedbackData),
         }
       );
 
@@ -50,6 +63,7 @@ function Feedback() {
       setRating(5);
       setMessage("");
     } catch (err) {
+      console.error("Feedback error:", err);
       setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);
@@ -62,6 +76,13 @@ function Feedback() {
         <span className="navbar-brand fw-bold">
           Smart Waste Management
         </span>
+
+        <button
+          className="btn btn-light"
+          onClick={() => navigate("/dashboard")}
+        >
+          Back to Dashboard
+        </button>
       </nav>
 
       <div className="container py-5">
@@ -96,9 +117,7 @@ function Feedback() {
                   type="number"
                   className="form-control"
                   value={reportId}
-                  onChange={(e) =>
-                    setReportId(e.target.value)
-                  }
+                  onChange={(e) => setReportId(e.target.value)}
                   placeholder="Enter report ID"
                   min="1"
                 />
@@ -134,9 +153,7 @@ function Feedback() {
                   className="form-control"
                   rows="4"
                   value={message}
-                  onChange={(e) =>
-                    setMessage(e.target.value)
-                  }
+                  onChange={(e) => setMessage(e.target.value)}
                   placeholder="Write your feedback"
                   required
                 ></textarea>

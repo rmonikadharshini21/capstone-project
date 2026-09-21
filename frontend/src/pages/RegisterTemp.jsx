@@ -1,10 +1,8 @@
 
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function RegisterTemp() {
-  const navigate = useNavigate();
-
   const [formData, setFormData] = useState({
     full_name: "",
     email: "",
@@ -20,6 +18,9 @@ export default function RegisterTemp() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const API_URL =
+    "https://capstone-project-ds0d.onrender.com";
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -29,12 +30,13 @@ export default function RegisterTemp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setMessage("");
     setLoading(true);
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/auth/register",
+        `${API_URL}/auth/register`,
         {
           method: "POST",
           headers: {
@@ -48,19 +50,29 @@ export default function RegisterTemp() {
 
       if (!response.ok) {
         const errorMessage = Array.isArray(data.detail)
-          ? data.detail.map((item) => item.msg).join(", ")
+          ? data.detail
+              .map((item) => item.msg)
+              .join(", ")
           : data.detail || "Registration failed";
 
         throw new Error(errorMessage);
       }
 
-      setMessage("Registration successful! Redirecting to login...");
+      setMessage(
+        "Registration successful! Redirecting to login..."
+      );
 
       setTimeout(() => {
-        navigate("/login");
+        window.location.href = "/login";
       }, 1500);
+
     } catch (error) {
-      setMessage(error.message);
+      console.error("Registration error:", error);
+
+      setMessage(
+        error.message || "Something went wrong"
+      );
+
     } finally {
       setLoading(false);
     }
@@ -69,7 +81,8 @@ export default function RegisterTemp() {
   const styles = {
     page: {
       minHeight: "100vh",
-      background: "linear-gradient(135deg, #edf8f0, #f8fffa)",
+      background:
+        "linear-gradient(135deg, #edf8f0, #f8fffa)",
       padding: "35px 15px",
       fontFamily: "Arial, sans-serif",
     },
@@ -81,7 +94,8 @@ export default function RegisterTemp() {
       backgroundColor: "white",
       borderRadius: "24px",
       padding: "35px",
-      boxShadow: "0 12px 35px rgba(25, 135, 84, 0.13)",
+      boxShadow:
+        "0 12px 35px rgba(25, 135, 84, 0.13)",
       border: "1px solid #e1eee5",
       boxSizing: "border-box",
     },
@@ -109,7 +123,8 @@ export default function RegisterTemp() {
       padding: "14px",
       border: "none",
       borderRadius: "12px",
-      background: "linear-gradient(90deg, #146c43, #198754)",
+      background:
+        "linear-gradient(90deg, #146c43, #198754)",
       color: "white",
       fontWeight: "bold",
       fontSize: "16px",
@@ -125,9 +140,20 @@ export default function RegisterTemp() {
   return (
     <div style={styles.page}>
       <div style={styles.card}>
+
         {/* HEADER */}
-        <div style={{ textAlign: "center", marginBottom: "30px" }}>
-          <div style={{ fontSize: "46px", marginBottom: "10px" }}>
+        <div
+          style={{
+            textAlign: "center",
+            marginBottom: "30px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "46px",
+              marginBottom: "10px",
+            }}
+          >
             🌿
           </div>
 
@@ -141,7 +167,12 @@ export default function RegisterTemp() {
             Smart Waste Management
           </h2>
 
-          <p style={{ color: "#6c757d", margin: 0 }}>
+          <p
+            style={{
+              color: "#6c757d",
+              margin: 0,
+            }}
+          >
             Create your account and help keep your environment clean
           </p>
         </div>
@@ -167,10 +198,14 @@ export default function RegisterTemp() {
           </div>
         )}
 
+        {/* FORM */}
         <form onSubmit={handleSubmit}>
+
           {/* FULL NAME */}
           <div style={styles.field}>
-            <label style={styles.label}>Full Name</label>
+            <label style={styles.label}>
+              Full Name
+            </label>
 
             <input
               type="text"
@@ -185,7 +220,9 @@ export default function RegisterTemp() {
 
           {/* EMAIL */}
           <div style={styles.field}>
-            <label style={styles.label}>Email Address</label>
+            <label style={styles.label}>
+              Email Address
+            </label>
 
             <input
               type="email"
@@ -200,7 +237,9 @@ export default function RegisterTemp() {
 
           {/* PASSWORD */}
           <div style={styles.field}>
-            <label style={styles.label}>Password</label>
+            <label style={styles.label}>
+              Password
+            </label>
 
             <div style={{ position: "relative" }}>
               <input
@@ -219,7 +258,9 @@ export default function RegisterTemp() {
 
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
+                onClick={() =>
+                  setShowPassword(!showPassword)
+                }
                 style={{
                   position: "absolute",
                   right: "10px",
@@ -240,7 +281,9 @@ export default function RegisterTemp() {
 
           {/* PHONE */}
           <div style={styles.field}>
-            <label style={styles.label}>Phone Number</label>
+            <label style={styles.label}>
+              Phone Number
+            </label>
 
             <input
               type="tel"
@@ -255,7 +298,9 @@ export default function RegisterTemp() {
 
           {/* ADDRESS */}
           <div style={styles.field}>
-            <label style={styles.label}>Address</label>
+            <label style={styles.label}>
+              Address
+            </label>
 
             <textarea
               name="address"
@@ -307,7 +352,9 @@ export default function RegisterTemp() {
 
           {/* ROLE */}
           <div style={styles.field}>
-            <label style={styles.label}>Account Type</label>
+            <label style={styles.label}>
+              Account Type
+            </label>
 
             <select
               name="role"
@@ -316,9 +363,17 @@ export default function RegisterTemp() {
               style={styles.input}
               required
             >
-              <option value="CITIZEN">Citizen</option>
-              <option value="WORKER">Worker</option>
-              <option value="ADMIN">Admin</option>
+              <option value="CITIZEN">
+                Citizen
+              </option>
+
+              <option value="WORKER">
+                Worker
+              </option>
+
+              <option value="ADMIN">
+                Admin
+              </option>
             </select>
           </div>
 
@@ -328,8 +383,11 @@ export default function RegisterTemp() {
             style={styles.button}
             disabled={loading}
           >
-            {loading ? "Creating Account..." : "Create Account"}
+            {loading
+              ? "Creating Account..."
+              : "Create Account"}
           </button>
+
         </form>
 
         {/* LOGIN LINK */}
@@ -339,7 +397,12 @@ export default function RegisterTemp() {
             marginTop: "25px",
           }}
         >
-          <span style={{ color: "#6c757d", fontSize: "14px" }}>
+          <span
+            style={{
+              color: "#6c757d",
+              fontSize: "14px",
+            }}
+          >
             Already have an account?{" "}
           </span>
 
@@ -368,6 +431,7 @@ export default function RegisterTemp() {
         >
           © 2026 Smart Waste Management System 🌿
         </p>
+
       </div>
     </div>
   );
