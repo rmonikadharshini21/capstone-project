@@ -2,6 +2,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const API_URL = "https://capstone-project-ds0d.onrender.com";
+
 function ReportWaste() {
   const navigate = useNavigate();
 
@@ -19,6 +21,7 @@ function ReportWaste() {
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -34,12 +37,14 @@ function ReportWaste() {
 
     setMessage("");
     setError("");
+    setLoading(true);
 
     const token = localStorage.getItem("token");
 
     if (!token) {
       setError("Please login before submitting a complaint.");
       navigate("/login");
+      setLoading(false);
       return;
     }
 
@@ -50,24 +55,17 @@ function ReportWaste() {
           ? `, Landmark: ${formData.landmark}`
           : ""
       }`,
-      description: `${
-        formData.description
-      }\nMunicipality ID: ${
-        formData.municipalityId
-      }\nMunicipality Name: ${
-        formData.municipalityName
-      }\nName: ${
-        formData.name
-      }\nPhone: ${
-        formData.phone
-      }\nEmail: ${
-        formData.email
-      }`,
+      description: `${formData.description}
+Municipality ID: ${formData.municipalityId}
+Municipality Name: ${formData.municipalityName}
+Name: ${formData.name}
+Phone: ${formData.phone}
+Email: ${formData.email}`,
     };
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/waste/report",
+        `${API_URL}/waste/report`,
         {
           method: "POST",
           headers: {
@@ -88,7 +86,7 @@ function ReportWaste() {
 
       setMessage(
         `Complaint submitted successfully! Report ID: ${
-          data.report_id || "Created"
+          data.report_id || data.id || "Created"
         }`
       );
 
@@ -105,7 +103,9 @@ function ReportWaste() {
       });
     } catch (err) {
       console.error("Submission error:", err);
-      setError(err.message);
+      setError(err.message || "Failed to submit complaint");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -335,8 +335,9 @@ function ReportWaste() {
               <button
                 type="submit"
                 className="btn btn-success w-100 fw-semibold py-2"
+                disabled={loading}
               >
-                Submit Complaint
+                {loading ? "Submitting..." : "Submit Complaint"}
               </button>
             </form>
           </div>

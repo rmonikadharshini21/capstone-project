@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 
 function Feedback() {
@@ -7,18 +6,22 @@ function Feedback() {
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const API_URL = "https://capstone-project-ds0d.onrender.com";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     setSuccess("");
     setError("");
+    setLoading(true);
 
     const token = localStorage.getItem("token");
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/waste/feedback",
+        `${API_URL}/waste/feedback`,
         {
           method: "POST",
           headers: {
@@ -36,15 +39,20 @@ function Feedback() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.detail || "Failed to submit feedback");
+        throw new Error(
+          data.detail || "Failed to submit feedback"
+        );
       }
 
       setSuccess("Feedback submitted successfully!");
+
       setReportId("");
       setRating(5);
       setMessage("");
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,7 +65,10 @@ function Feedback() {
       </nav>
 
       <div className="container py-5">
-        <div className="card shadow-sm mx-auto" style={{ maxWidth: "500px" }}>
+        <div
+          className="card shadow-sm mx-auto"
+          style={{ maxWidth: "500px" }}
+        >
           <div className="card-body p-4">
             <h2 className="text-center text-success fw-bold mb-4">
               Give Feedback
@@ -85,7 +96,9 @@ function Feedback() {
                   type="number"
                   className="form-control"
                   value={reportId}
-                  onChange={(e) => setReportId(e.target.value)}
+                  onChange={(e) =>
+                    setReportId(e.target.value)
+                  }
                   placeholder="Enter report ID"
                   min="1"
                 />
@@ -99,7 +112,9 @@ function Feedback() {
                 <select
                   className="form-select"
                   value={rating}
-                  onChange={(e) => setRating(e.target.value)}
+                  onChange={(e) =>
+                    setRating(Number(e.target.value))
+                  }
                   required
                 >
                   <option value="5">5 - Excellent</option>
@@ -119,7 +134,9 @@ function Feedback() {
                   className="form-control"
                   rows="4"
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  onChange={(e) =>
+                    setMessage(e.target.value)
+                  }
                   placeholder="Write your feedback"
                   required
                 ></textarea>
@@ -128,8 +145,11 @@ function Feedback() {
               <button
                 type="submit"
                 className="btn btn-success w-100"
+                disabled={loading}
               >
-                Submit Feedback
+                {loading
+                  ? "Submitting..."
+                  : "Submit Feedback"}
               </button>
             </form>
           </div>
