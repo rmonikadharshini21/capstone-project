@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -9,6 +8,7 @@ function ReportWaste() {
 
   const initialFormData = {
     complaintType: "",
+    customWasteType: "",
     municipalityId: "",
     municipalityName: "",
     location: "",
@@ -54,10 +54,18 @@ function ReportWaste() {
       return;
     }
 
+    if (formData.complaintType === "Other" && !formData.customWasteType.trim()) {
+      setError("Please enter your waste type or problem.");
+      return;
+    }
+
     setLoading(true);
 
     const reportData = {
-      waste_type: formData.complaintType,
+      waste_type:
+        formData.complaintType === "Other"
+          ? formData.customWasteType.trim()
+          : formData.complaintType,
 
       location: `${formData.location}${
         formData.landmark.trim()
@@ -114,14 +122,12 @@ Email: ${formData.email.trim()}`,
       );
 
       setFormData(initialFormData);
-
     } catch (err) {
       console.error("Submission error:", err);
 
       setError(
         err.message || "Failed to submit complaint"
       );
-
     } finally {
       setLoading(false);
     }
@@ -131,6 +137,7 @@ Email: ${formData.email.trim()}`,
     <div className="min-vh-100 bg-light">
 
       {/* NAVBAR */}
+
       <nav className="navbar navbar-dark bg-success px-4">
         <span className="navbar-brand fw-bold">
           Smart Waste Management
@@ -146,14 +153,18 @@ Email: ${formData.email.trim()}`,
       </nav>
 
       {/* MAIN CONTENT */}
+
       <div className="container py-5">
+
         <div
           className="card shadow mx-auto"
           style={{ maxWidth: "800px" }}
         >
+
           <div className="card-body p-4">
 
             {/* TITLE */}
+
             <h2 className="fw-bold text-success text-center mb-2">
               Report Waste / Complaint
             </h2>
@@ -163,6 +174,7 @@ Email: ${formData.email.trim()}`,
             </p>
 
             {/* SUCCESS MESSAGE */}
+
             {message && (
               <div
                 className="alert alert-success"
@@ -173,6 +185,7 @@ Email: ${formData.email.trim()}`,
             )}
 
             {/* ERROR MESSAGE */}
+
             {error && (
               <div
                 className="alert alert-danger"
@@ -183,10 +196,13 @@ Email: ${formData.email.trim()}`,
             )}
 
             {/* FORM */}
+
             <form onSubmit={handleSubmit}>
 
               {/* COMPLAINT TYPE */}
+
               <div className="mb-4">
+
                 <label className="form-label fw-semibold">
                   Complaint Type
                 </label>
@@ -198,53 +214,147 @@ Email: ${formData.email.trim()}`,
                   onChange={handleChange}
                   required
                 >
+
                   <option value="">
                     Select complaint type
-                  </option>
-
-                  <option value="Plastic Waste">
-                    Plastic Waste
                   </option>
 
                   <option value="General Garbage">
                     General Garbage
                   </option>
 
-                  <option value="Dead Animal">
-                    Dead Animal
+                  <option value="Plastic Waste">
+                    Plastic Waste
                   </option>
 
-                  <option value="Household Waste">
-                    Household Waste
+                  <option value="Food Waste">
+                    Food Waste
                   </option>
 
-                  <option value="Construction Waste">
-                    Construction Waste
+                  <option value="Organic Waste">
+                    Organic Waste
                   </option>
 
                   <option value="E-Waste">
                     E-Waste
                   </option>
 
-                  <option value="Overflowing Garbage Bin">
-                    Overflowing Garbage Bin
+                  <option value="Medical Waste">
+                    Medical Waste
                   </option>
 
-                  <option value="Sewage / Wastewater">
-                    Sewage / Wastewater
+                  <option value="Hazardous Waste">
+                    Hazardous Waste
+                  </option>
+
+                  <option value="Glass Waste">
+                    Glass Waste
+                  </option>
+
+                  <option value="Metal Waste">
+                    Metal Waste
+                  </option>
+
+                  <option value="Construction Waste">
+                    Construction Waste
+                  </option>
+
+                  <option value="Sewage Waste">
+                    Sewage Waste
                   </option>
 
                   <option value="Illegal Dumping">
                     Illegal Dumping
                   </option>
 
+                  <option value="Dead Animal">
+                    Dead Animal
+                  </option>
+
+                  <option value="Human Waste">
+                    Human Waste
+                  </option>
+
+                  <option value="Overflowing Garbage Bin">
+                    Overflowing Garbage Bin
+                  </option>
+
+                  <option value="Household Waste">
+                    Household Waste
+                  </option>
+
+                  <option value="Mixed Waste">
+                    Mixed Waste
+                  </option>
+
+                  <option value="Missed Waste Collection">
+                    Missed Waste Collection
+                  </option>
+
+                  <option value="Blocked Drain">
+                    Blocked Drain
+                  </option>
+
+                  <option value="Drain Overflow">
+                    Drain Overflow
+                  </option>
+
+                  <option value="Open Waste Burning">
+                    Open Waste Burning
+                  </option>
+
+                  <option value="Street Littering">
+                    Street Littering
+                  </option>
+
+                  <option value="Public Place Waste">
+                    Public Place Waste
+                  </option>
+
+                  <option value="Damaged Garbage Bin">
+                    Damaged Garbage Bin
+                  </option>
+
+                  <option value="Water Pollution">
+                    Water Pollution
+                  </option>
+
+                  <option value="Waste Collection Vehicle Delay">
+                    Waste Collection Vehicle Delay
+                  </option>
+
                   <option value="Other">
                     Other
                   </option>
+
                 </select>
+
+                {formData.complaintType === "Other" && (
+                  <div className="mt-3">
+                    <label className="form-label fw-semibold">
+                      Enter your waste type or problem
+                    </label>
+                    <input
+                      type="text"
+                      name="customWasteType"
+                      className="form-control"
+                      placeholder="Describe the waste type or problem"
+                      value={formData.customWasteType}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                )}
+
+                <small className="text-muted">
+                  The system will automatically assign priority
+                  based on the complaint type.
+                </small>
+
               </div>
 
               {/* MUNICIPALITY INFORMATION */}
+
               <h5 className="fw-bold text-success mb-3">
                 Municipality Information
               </h5>
@@ -252,6 +362,7 @@ Email: ${formData.email.trim()}`,
               <div className="row">
 
                 <div className="col-md-6 mb-3">
+
                   <label className="form-label fw-semibold">
                     Municipality ID
                   </label>
@@ -265,9 +376,11 @@ Email: ${formData.email.trim()}`,
                     onChange={handleChange}
                     required
                   />
+
                 </div>
 
                 <div className="col-md-6 mb-3">
+
                   <label className="form-label fw-semibold">
                     Municipality Name
                   </label>
@@ -281,16 +394,19 @@ Email: ${formData.email.trim()}`,
                     onChange={handleChange}
                     required
                   />
+
                 </div>
 
               </div>
 
               {/* WASTE LOCATION */}
+
               <h5 className="fw-bold text-success mt-3 mb-3">
                 Waste Location
               </h5>
 
               <div className="mb-3">
+
                 <label className="form-label fw-semibold">
                   Full Location / Address
                 </label>
@@ -304,10 +420,13 @@ Email: ${formData.email.trim()}`,
                   onChange={handleChange}
                   required
                 />
+
               </div>
 
               {/* LANDMARK */}
+
               <div className="mb-3">
+
                 <label className="form-label fw-semibold">
                   Nearby Landmark
                 </label>
@@ -320,10 +439,13 @@ Email: ${formData.email.trim()}`,
                   value={formData.landmark}
                   onChange={handleChange}
                 />
+
               </div>
 
               {/* DESCRIPTION */}
+
               <div className="mb-4">
+
                 <label className="form-label fw-semibold">
                   Complaint Description
                 </label>
@@ -337,9 +459,11 @@ Email: ${formData.email.trim()}`,
                   onChange={handleChange}
                   required
                 />
+
               </div>
 
               {/* CONTACT INFORMATION */}
+
               <h5 className="fw-bold text-success mb-3">
                 Your Contact Information
               </h5>
@@ -347,6 +471,7 @@ Email: ${formData.email.trim()}`,
               <div className="row">
 
                 <div className="col-md-6 mb-3">
+
                   <label className="form-label fw-semibold">
                     Your Name
                   </label>
@@ -360,9 +485,11 @@ Email: ${formData.email.trim()}`,
                     onChange={handleChange}
                     required
                   />
+
                 </div>
 
                 <div className="col-md-6 mb-3">
+
                   <label className="form-label fw-semibold">
                     Phone Number
                   </label>
@@ -376,12 +503,15 @@ Email: ${formData.email.trim()}`,
                     onChange={handleChange}
                     required
                   />
+
                 </div>
 
               </div>
 
               {/* EMAIL */}
+
               <div className="mb-4">
+
                 <label className="form-label fw-semibold">
                   Email Address
                 </label>
@@ -395,9 +525,36 @@ Email: ${formData.email.trim()}`,
                   onChange={handleChange}
                   required
                 />
+
+              </div>
+
+              {/* PRIORITY INFORMATION */}
+
+              <div className="alert alert-info">
+
+                <strong>Automatic Priority:</strong>
+
+                <div className="mt-2">
+                  🔴 High – Medical, Hazardous, E-Waste, Sewage,
+                  Illegal Dumping, Dead Animal, Human Waste, Overflowing Garbage Bin,
+                  Blocked Drain, Drain Overflow, Open Waste Burning, Water Pollution
+                </div>
+
+                <div>
+                  🟡 Medium – Plastic, Food, Organic, Glass, Metal,
+                  Missed Waste Collection, Street Littering, Public Place Waste,
+                  Damaged Garbage Bin, Waste Collection Vehicle Delay
+                </div>
+
+                <div>
+                  🟢 Low – General, Household, Construction,
+                  Mixed and Other
+                </div>
+
               </div>
 
               {/* SUBMIT BUTTON */}
+
               <button
                 type="submit"
                 className="btn btn-success w-100 fw-semibold py-2"
@@ -411,8 +568,11 @@ Email: ${formData.email.trim()}`,
             </form>
 
           </div>
+
         </div>
+
       </div>
+
     </div>
   );
 }
