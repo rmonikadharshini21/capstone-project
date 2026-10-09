@@ -1,5 +1,5 @@
-
 from sqlalchemy.orm import Session, aliased
+
 from app.models.waste import WasteReport
 from app.models.user import User
 from app.schemas.waste import WasteReportCreate
@@ -10,11 +10,39 @@ def create_waste_report(
     report_data: WasteReportCreate,
     user_id: int
 ):
+    waste_type = report_data.waste_type.strip().upper()
+
+    high_priority = {
+        "MEDICAL WASTE",
+        "HAZARDOUS WASTE",
+        "E-WASTE",
+        "SEWAGE WASTE",
+        "ILLEGAL DUMPING",
+        "DEAD ANIMAL",
+        "OVERFLOWING GARBAGE BIN"
+    }
+
+    medium_priority = {
+        "PLASTIC WASTE",
+        "FOOD WASTE",
+        "ORGANIC WASTE",
+        "GLASS WASTE",
+        "METAL WASTE"
+    }
+
+    if waste_type in high_priority:
+        priority = "HIGH"
+    elif waste_type in medium_priority:
+        priority = "MEDIUM"
+    else:
+        priority = "LOW"
+
     new_report = WasteReport(
         user_id=user_id,
         waste_type=report_data.waste_type,
         location=report_data.location,
-        description=report_data.description
+        description=report_data.description,
+        priority_level=priority
     )
 
     db.add(new_report)
@@ -46,24 +74,20 @@ def get_waste_reports(db: Session, user_id: int):
         )
         .outerjoin(
             Admin,
-            (
-                Admin.role == "ADMIN"
-            ) &
+            (Admin.role == "ADMIN") &
             (
                 Admin.municipality_area_name
                 == User.municipality_area_name
             )
         )
-        .filter(
-            WasteReport.user_id == user_id
-        )
+        .filter(WasteReport.user_id == user_id)
         .all()
     )
 
     result = []
 
     for report, worker_name, worker_phone, admin_name, admin_phone in reports:
-        report_data = {
+        result.append({
             "report_id": report.report_id,
             "user_id": report.user_id,
             "worker_id": report.worker_id,
@@ -78,8 +102,6 @@ def get_waste_reports(db: Session, user_id: int):
             "worker_phone": worker_phone,
             "admin_name": admin_name,
             "admin_phone": admin_phone
-        }
-
-        result.append(report_data)
+        })
 
     return result
